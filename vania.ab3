@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 138
+; NumberOfBuilds  = 141
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 88
-; CursorColumn    = 18
+; CursorLine      = 63
+; CursorColumn    = 10
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -200,7 +200,7 @@ keyheld = False
 
 Repeat
  DrawLevel{}
-
+ ;InitLevel{}
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    ando\pos\x = ando\pos\x + 1
    lastkey = #KEY_RIGHT
@@ -227,9 +227,7 @@ Repeat
  EndIf
 
  DrawCharacter{ando\pos\x, ando\pos\y}
- Locate 2,2
- Print ando\pos\x, ando\pos\y
- ;Gosub doubleBuf
+ Gosub doubleBuf
  VWait
 Until Joyb(0)
 End

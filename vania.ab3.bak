@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 137
+; NumberOfBuilds  = 140
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 190
-; CursorColumn    = 18
+; CursorLine      = 127
+; CursorColumn    = 3
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -127,14 +127,13 @@ SHARED level
 bitm = 0
 
 Statement InitLevel{}
-Show 1
- Use BitMap  1
+; Use BitMap  1
  For z = 0 To #TILES - 1
    For x = 0 To #TILES  - 1
      Blit level(x,z),#XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W), 60 + (#HALFTILE_H * x) + (z * #HALFTILE_H)
    Next
  Next
- GetaShape 24, 0,0,319,255
+;GetaShape 24, 0,0,319,255
 End Statement
 
 
@@ -163,7 +162,7 @@ End Statement
 InitCopList 0,44,200,$10008,0,64,0
 DisplayPalette 0,0
 CreateDisplay 0
-DisplayBitMap 0,0
+DisplayBitMap 0,1
 Use BitMap 1
 
 Restore leveldata
@@ -200,8 +199,8 @@ lastkey = #KEY_NONE
 keyheld = False
 
 Repeat
- DrawLevel{}
-
+ ;DrawLevel{}
+ InitLevel{}
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    ando\pos\x = ando\pos\x + 1
    lastkey = #KEY_RIGHT
@@ -228,9 +227,7 @@ Repeat
  EndIf
 
  DrawCharacter{ando\pos\x, ando\pos\y}
- Locate 2,2
- Print ando\pos\x, ando\pos\y
- ;Gosub doubleBuf
+ Gosub doubleBuf
  VWait
 Until Joyb(0)
 End
