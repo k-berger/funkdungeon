@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 58
+; NumberOfBuilds  = 93
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 16
-; CursorColumn    = 24
+; CursorLine      = 99
+; CursorColumn    = 1
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -81,14 +81,38 @@ BitMap 1,320,256,6
 
 AMIGA
 
-LoadBitMap 1,"amiga:dungeon/vania_shapes.pic",0
+NEWTYPE .vec2
+  x.q
+  y.q
+End NEWTYPE
+
+NEWTYPE .character
+  pos.vec2
+End NEWTYPE
+
+
+Dim level.w (10,10)
+SHARED level
+
+
+LoadBitMap 1,"amiga:funkdungeon/vania_shapes.pic",0
 Use BitMap 1
 ; Get tiles
 #TILE_WIDTH = 22
+;We draw the tiles closer to one another, so the planes look better
+#HALFTILE_W = 10
+#HALFTILE_H = 5
+
 #TILE_HEIGHT = 14
+#OFFSETX = 28
+#OFFSETY = 14
+
+#TILES = 12
+#XOFFSET = 250 - (10 * #TILES )
+#YOFFSET = 60
 
 For y = 0 To 2
-GetaShape y, 28 ,14 + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
+ GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
 Next
 
 Gosub cutfont
@@ -96,16 +120,42 @@ Gosub cutfont
 
 ;GetaShape 0,13,29,30,30
 BLITZ
+
+Statement DrawLevel{}
+
+ For z = 0 To #TILES - 1
+   For x = 0 To #TILES  - 1
+     Blit level(x,z),#XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W), 60 + (#HALFTILE_H * x) + (z * #HALFTILE_H)
+   Next
+ Next
+
+End Statement
+
+Statement SchranzText {text.s}
+For c = 1 To Len(text)
+ sindex = Asc(Mid$(text,c,1)) - 65
+ If sindex < 26
+ Blit 3 + sindex,50 + c * 6,30
+ EndIf
+Next
+End Statement
+
+Statement DrawCharacter {posx, posy}
+  xc = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
+  yc = #YOFFSET + (#HALFTILE_H * posx) + (posy * #HALFTILE_H)
+
+  Circlef xc,yc,6,6,3
+
+End Statement
+
 InitCopList 0,44,200,$10008,0,64,0
 DisplayPalette 0,0
 CreateDisplay 0
 DisplayBitMap 0,0
 Use BitMap 0
 
-#TILES = 12
-#XOFFSET = 250 - (10 * #TILES )
 
-Dim level.w (10,10)
+
 Restore leveldata
 For x = 0 To #TILES - 1
  For y = 0 To #TILES - 1
@@ -113,25 +163,16 @@ For x = 0 To #TILES - 1
  Next
 Next
 
+ando.character\pos\x = 4
+ando.character\pos\x = 4
 
 
-For z = 0 To #TILES - 1
-  For x = 0 To #TILES  - 1
-  Blit level(x,z),#XOFFSET + (10 * x) - (z * 10), 60 + (5 * x) + (z * 5)
-  Next
-Next
-
-text.s = "VANIA IS COMING TO AMIGA"
-For c = 1 To Len(text)
- sindex = Asc(Mid$(text,c,1)) - 65
- If sindex < 26
- Blit 3 + sindex,50 + c * 6,30
- EndIf
-
-Next
-
-
-MouseWait
+DrawLevel {}
+SchranzText {"HALLO"}
+DrawCharacter{ando\pos\x, ando\pos\y}
+Repeat
+ VWait
+Until Joyb(0)
 End
 
 leveldata :
@@ -160,4 +201,6 @@ GetaShape 3 + n,28 + (n * #FONT_WIDTH) + n,125, #FONT_WIDTH, #FONT_HEIGHT
 Next
 
 Return
+
+
 
