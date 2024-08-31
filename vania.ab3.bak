@@ -1,0 +1,163 @@
+; XTRA
+; Embedded .xtra Header
+; 
+; General Info
+; -------------------------------------------------------
+; ExePath         = "ram:"
+; ExeFile         = "Empty"
+; CreateIcon      = 0
+; Residents       = "all.res"
+; 
+; Compiler
+; -------------------------------------------------------
+; StringBuffer    = 100000
+; MakeSmallest    = 1
+; FuncOptimize    = 1
+; Version         = 0.0.0
+; NumberOfBuilds  = 58
+; 
+; Debugger
+; -------------------------------------------------------
+; CliArgs         = ""
+; StackSize       = 8192
+; RuntimeDebug    = 0
+; DebugInfo       = 0
+; CreateDbgFile   = 0
+; OverflowCheck   = 0
+; AssemblerCheck  = 0
+; InterruptCheck  = 1
+; AutoRun         = 1
+; 
+; Editor
+; -------------------------------------------------------
+; CursorLine      = 16
+; CursorColumn    = 24
+; LabelSearch     = ""
+; LabelRemark     = 0
+; LabelAll        = 0
+; LabelPosition   = 0
+; 
+; Blitz Objects
+; -------------------------------------------------------
+; Max File        = 100
+; Max GadgetList  = 100
+; Max Shape       = 200
+; Max Bank        = 1
+; Max MenuList    = 100
+; Max GTList      = 100
+; Max Palette     = 4
+; Max BitMap      = 10
+; Max Screen      = 5
+; Max IntuiFont   = 10
+; Max BlitzFont   = 1
+; Max Window      = 100
+; Max IconInfo    = 1
+; Max MUIObject   = 50
+; Max AsyncReq    = 4
+; Max Req-Lib     = 5
+; Max GTMenuList  = 100
+; Max Console     = 5
+; Max TCPSock     = 5
+; Max Tape        = 5
+; Max Sound       = 10
+; Max MedModule   = 8
+; Max Buffer      = 10
+; Max Queue       = 10
+; Max Sprite      = 20
+; Max Module      = 5
+; Max Slice       = 10
+; Max Page        = 4
+; Max CopList     = 10
+; Max PTModule    = 5
+; Max Anim        = 10
+; Max NChunky     = 50
+; Max Chunky      = 20
+; Max Stencil     = 5
+; Max XBSound     = 10
+; /XTRA
+NoCli
+BitMap 0,320,256,6
+BitMap 1,320,256,6
+
+AMIGA
+
+LoadBitMap 1,"amiga:dungeon/vania_shapes.pic",0
+Use BitMap 1
+; Get tiles
+#TILE_WIDTH = 22
+#TILE_HEIGHT = 14
+
+For y = 0 To 2
+GetaShape y, 28 ,14 + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
+Next
+
+Gosub cutfont
+
+
+;GetaShape 0,13,29,30,30
+BLITZ
+InitCopList 0,44,200,$10008,0,64,0
+DisplayPalette 0,0
+CreateDisplay 0
+DisplayBitMap 0,0
+Use BitMap 0
+
+#TILES = 12
+#XOFFSET = 250 - (10 * #TILES )
+
+Dim level.w (10,10)
+Restore leveldata
+For x = 0 To #TILES - 1
+ For y = 0 To #TILES - 1
+  Read level(x,y)
+ Next
+Next
+
+
+
+For z = 0 To #TILES - 1
+  For x = 0 To #TILES  - 1
+  Blit level(x,z),#XOFFSET + (10 * x) - (z * 10), 60 + (5 * x) + (z * 5)
+  Next
+Next
+
+text.s = "VANIA IS COMING TO AMIGA"
+For c = 1 To Len(text)
+ sindex = Asc(Mid$(text,c,1)) - 65
+ If sindex < 26
+ Blit 3 + sindex,50 + c * 6,30
+ EndIf
+
+Next
+
+
+MouseWait
+End
+
+leveldata :
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,2,2,2,2,2,2,0,0,0,0
+Data.w  0,0,2,1,1,1,1,2,0,0,0,0
+Data.w  0,0,2,1,1,1,1,2,0,0,0,0
+Data.w  0,0,2,1,1,1,1,2,0,0,0,0
+Data.w  0,0,2,2,2,2,2,2,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+
+leveltext :
+Data.s "Hello world"
+
+cutfont :
+#FONT_HEIGHT = 8
+#FONT_WIDTH = 5
+
+For n = 0 To 25
+GetaShape 3 + n,28 + (n * #FONT_WIDTH) + n,125, #FONT_WIDTH, #FONT_HEIGHT
+Next
+
+Return
+
