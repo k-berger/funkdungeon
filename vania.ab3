@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 102
+; NumberOfBuilds  = 138
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 48
-; CursorColumn    = 13
+; CursorLine      = 88
+; CursorColumn    = 18
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -78,6 +78,7 @@
 NoCli
 BitMap 0,320,256,6
 BitMap 1,320,256,6
+BitMap 2,320,256,6
 
 AMIGA
 
@@ -93,8 +94,8 @@ End NEWTYPE
 
 
 
-LoadBitMap 1,"amiga:funkdungeon/vania_shapes.pic",0
-Use BitMap 1
+LoadBitMap 0,"amiga:funkdungeon/vania_shapes.pic",0
+Use BitMap 0
 ; Get tiles
 #TILE_WIDTH = 22
 ;We draw the tiles closer to one another, so the planes look better
@@ -123,15 +124,21 @@ BLITZ
 
 Dim level.w (10,10)
 SHARED level
+bitm = 0
 
-
-Statement DrawLevel{}
-
+Statement InitLevel{}
+ Use BitMap  1
  For z = 0 To #TILES - 1
    For x = 0 To #TILES  - 1
      Blit level(x,z),#XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W), 60 + (#HALFTILE_H * x) + (z * #HALFTILE_H)
    Next
  Next
+ GetaShape 24, 0,0,319,255
+End Statement
+
+
+Statement DrawLevel{}
+  Blit 24,0,0
 
 End Statement
 
@@ -145,7 +152,7 @@ Next
 End Statement
 
 Statement DrawCharacter {posx, posy}
-  xc = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
+  xc = #XOFFSET + (#HALFTILE_W * posx) - (posy * #HALFTILE_W)
   yc = #YOFFSET + (#HALFTILE_H * posx) + (posy * #HALFTILE_H)
 
   Circlef xc,yc,6,6,3
@@ -155,8 +162,8 @@ End Statement
 InitCopList 0,44,200,$10008,0,64,0
 DisplayPalette 0,0
 CreateDisplay 0
-DisplayBitMap 0,0
-Use BitMap 0
+DisplayBitMap 0,1
+Use BitMap 1
 
 Restore leveldata
 For x = 0 To #TILES - 1
@@ -165,14 +172,64 @@ For x = 0 To #TILES - 1
  Next
 Next
 
-ando.character\pos\x = 4
-ando.character\pos\x = 4
 
+ando.character\pos\x = 4
+ando.character\pos\y = 4
+
+InitLevel{}
 
 DrawLevel {}
 SchranzText {"HALLO"}
 DrawCharacter{ando\pos\x, ando\pos\y}
+
+BlitzKeys On
+
+
+; DA GAME LOOP
+#KEY_UP = $4c
+#KEY_DOWN = $4d
+#KEY_LEFT = $4f
+#KEY_RIGHT = $4e
+#KEY_NONE = 0
+bitm = 0
+BitMapOutput 1
+BitMapOutput 2
+
+lastkey = #KEY_NONE
+keyheld = False
+
 Repeat
+ DrawLevel{}
+
+ If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
+   ando\pos\x = ando\pos\x + 1
+   lastkey = #KEY_RIGHT
+   keyheld = True
+ EndIf
+ If RawStatus(#KEY_LEFT) = -1 AND lastkey <> #KEY_LEFT
+   ando\pos\x = ando\pos\x - 1
+   lastkey = #KEY_LEFT
+   keyheld = True
+ EndIf
+ If RawStatus(#KEY_UP) = -1   AND lastkey <> #KEY_UP
+  ando\pos\y = ando\pos\y - 1
+  lastkey = #KEY_UP
+  keyheld = True
+ EndIf
+ If RawStatus(#KEY_DOWN) = -1 AND lastkey <> #KEY_DOWN
+   ando\pos\y = ando\pos\y + 1
+   lastkey = #KEY_DOWN
+   keyheld = True
+ EndIf
+
+ If RawStatus(#KEY_UP) = 0 AND RawStatus(#KEY_DOWN) = 0 AND RawStatus(#KEY_RIGHT) = 0 AND RawStatus(#KEY_LEFT) = 0
+  lastkey = #KEY_NONE
+ EndIf
+
+ DrawCharacter{ando\pos\x, ando\pos\y}
+ Locate 2,2
+ Print ando\pos\x, ando\pos\y
+ ;Gosub doubleBuf
  VWait
 Until Joyb(0)
 End
@@ -205,4 +262,10 @@ Next
 Return
 
 
+.doubleBuf:
+ DisplayBitMap 0,bitm + 1
 
+ bitm = 1 - bitm
+ Use BitMap bitm + 1
+ Cls
+Return
