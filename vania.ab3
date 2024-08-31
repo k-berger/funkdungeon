@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 93
+; NumberOfBuilds  = 102
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 13
-; CursorColumn    = 10
+; CursorLine      = 48
+; CursorColumn    = 13
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -75,7 +75,6 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
-WBStartup
 NoCli
 BitMap 0,320,256,6
 BitMap 1,320,256,6
@@ -92,8 +91,6 @@ NEWTYPE .character
 End NEWTYPE
 
 
-Dim level.w (10,10)
-SHARED level
 
 
 LoadBitMap 1,"amiga:funkdungeon/vania_shapes.pic",0
@@ -120,7 +117,13 @@ Gosub cutfont
 
 
 ;GetaShape 0,13,29,30,30
+
+
 BLITZ
+
+Dim level.w (10,10)
+SHARED level
+
 
 Statement DrawLevel{}
 
