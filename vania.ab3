@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 279
+; NumberOfBuilds  = 281
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 138
-; CursorColumn    = 8
+; CursorLine      = 167
+; CursorColumn    = 51
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -78,7 +78,7 @@
 WBStartup
 
 NoCli
-; creating 3 bitmaps here for shape-sheet and double-buffer
+; creating 4 bitmaps here for the top slice, shape-sheet and double-buffer
 BitMap 0,320,44,6
 BitMap 1,320,200,6
 BitMap 2,320,200,6
@@ -144,7 +144,7 @@ GetaShape 3,169,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
 Gosub cutfont
 GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
 
-VWait 200
+VWait 50
 
 BLITZ
 Buffer 0,48000
@@ -190,6 +190,8 @@ SHARED level(), tileCoords()
  GetaShape #RENDERED_LEVEL_SHAPE, 5,4,311,180
  Cls
 
+; blit the ground-tiles on both double-buffer bitmaps so we can
+; restore the background with BBlit/Unbuffer nicely
 Use BitMap 1
  Blit #RENDERED_LEVEL_SHAPE,5,4
 Use BitMap 2
@@ -198,45 +200,61 @@ Use BitMap 2
 End Statement
 
 Statement DrawCharacter {posx, posy, bitm}
+; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
+; to avoid another stack level
   SHARED tileCoords()
   BBlit bitm, #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\y - (#CHAR_HEIGHT) / 2
 End Statement
 
 Statement DrawLevel{posx, posy, bitm}
-SHARED level(),tileCoords()
+  ; arguments: x-position and y-position of character
+  ;            bitmap to draw on(
+  ; drawing the level consists of
+  ;  - drawing floor-tiles (immutable, pre-rendered per room in InitLevel)
+  ;  - drawing high tiles (walls, doorways, ...)
+  ;  - drawing character, enemies and items at the right time (ordering is important for "depth")
+  SHARED level(),tileCoords()
+  UnBuffer bitm
 
-
- ;Blit #RENDERED_LEVEL_SHAPE,0,0
- UnBuffer bitm
-
- For z = 0 To #TILES - 1
-   For x = 0 To #TILES  - 1
-     If z = posy AND x = posx
-       DrawCharacter{posx,posy, bitm}
-     EndIf
-
-     If level (z,x) > = 3
-       BBlit bitm, level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
-     EndIf
-   Next
- Next
-
- ;BBlit bitm, #RENDERED_LEVEL_SHAPE_HIGH,0,0
+  For z = 0 To #TILES - 1
+    For x = 0 To #TILES  - 1
+      If z = posy AND x = posx
+        DrawCharacter{posx,posy, bitm}
+      EndIf
+      If level (z,x) > = 3
+        BBlit bitm, level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
+      EndIf
+    Next
+  Next
 End Statement
 
 Statement DrawText {text.s}
+; we don't print text, we blit it. There is a fotn on the chaotic
+; shape-sheet. Letters are cut out and then blitted based on the
+; ascii-code of characters from the string.
+; TODO:
+;   - Add lower-case
+;   - add symbols
+;   - Allow for layout (multiline specifically)
  For c = 1 To Len(text)
    sindex = Asc(Mid$(text,c,1)) - 65
-   If sindex < 26
+   If sindex > =0 AND sindex < 26
      Blit #FONT_SHAPE_INDEX + sindex,10 + c * (#FONT_WIDTH + 1),3
    EndIf
   Next
 End Statement
 
 Function.w CanMoveTo{posx, posy}
+; determine whether the character can move to the coordinates passed
+; we obviously can't walk over water/acid/lava or through brickwalls
   SHARED level()
   canmove.w = -1
-  If level(posy, posx) = 1 Then canmove = 0
+  ; make sure to not cross the playfield
+  If posx < 0 OR posx > #TILES - 1 Then canmove = 0
+  If posy < 0 OR posy > #TILES - 1 Then canmove = 0
+
+  ; make sure the target position isn't taken by something we can't pass
+  If level(posy, posx) = 1 OR level(posy,posx) = 3 Then canmove = 0
   Function Return canmove
 End Function
 
@@ -319,6 +337,8 @@ Until Joyb(0)
 
 End
 
+; as long as there is a not actual core to the game, there is no point
+; in designing any kind of levels. So we just read our shape-indices from this data-snippet
 leveldata :
 Data.w  0,0,3,0,3,0,0,0,0,0
 Data.w  0,0,0,0,0,0,0,0,0,0
