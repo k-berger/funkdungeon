@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 119
-; CursorColumn    = 32
+; CursorLine      = 138
+; CursorColumn    = 8
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -209,10 +209,12 @@ SHARED level(),tileCoords()
  ;Blit #RENDERED_LEVEL_SHAPE,0,0
  UnBuffer bitm
 
- DrawCharacter{posx,posy, bitm}
-
  For z = 0 To #TILES - 1
    For x = 0 To #TILES  - 1
+     If z = posy AND x = posx
+       DrawCharacter{posx,posy, bitm}
+     EndIf
+
      If level (z,x) > = 3
        BBlit bitm, level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
      EndIf

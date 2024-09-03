@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 129
-; CursorColumn    = 18
+; CursorLine      = 119
+; CursorColumn    = 32
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -191,9 +191,9 @@ SHARED level(), tileCoords()
  Cls
 
 Use BitMap 1
- Blit #RENDERED_LEVEL_SHAPE,0,0
+ Blit #RENDERED_LEVEL_SHAPE,5,4
 Use BitMap 2
- Blit #RENDERED_LEVEL_SHAPE,0,0
+ Blit #RENDERED_LEVEL_SHAPE,5,4
 
 End Statement
 
