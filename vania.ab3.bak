@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 262
+; NumberOfBuilds  = 279
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,11 +30,11 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 98
-; CursorColumn    = 46
-; LabelSearch     = "#yoffset"
+; CursorLine      = 129
+; CursorColumn    = 18
+; LabelSearch     = ""
 ; LabelRemark     = 0
-; LabelAll        = 1
+; LabelAll        = 0
 ; LabelPosition   = 0
 ; 
 ; Blitz Objects
@@ -99,11 +99,11 @@ End NEWTYPE
 ; CONSTANTS FOR PLAYFIELD MATH
 ; ----------------------------
 
-#TILE_WIDTH = 30
 ;We draw the tiles closer to one another, so the planes look better
 #HALFTILE_W = 15
 #HALFTILE_H = 8
 
+#TILE_WIDTH = 30
 #TILE_HEIGHT = 23
 #OFFSETX = 203
 #OFFSETY = 6
@@ -116,7 +116,8 @@ End NEWTYPE
 #CHAR_HEIGHT = 17
 
 #RENDERED_LEVEL_SHAPE = 29
-#CHAR_SHAPE_MIN = 30
+#RENDERED_LEVEL_SHAPE_HIGH = 30
+#CHAR_SHAPE_MIN = 31
 
 #FONT_HEIGHT = 5
 #FONT_WIDTH = 4
@@ -125,7 +126,7 @@ End NEWTYPE
 #SHAPE_SHEET_BITMAP = 3
 
 ; index of the first letter shape
-#FONT_SHAPE_INDEX = 3
+#FONT_SHAPE_INDEX = 4
 
 
 ; we take all the shapes we need from a shape-sheet style bitmap
@@ -136,11 +137,19 @@ Use BitMap #SHAPE_SHEET_BITMAP
 For y = 0 To 2
  GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
 Next
+; cutting "high" tiles here (doors, walls, etc.)
+
+GetaShape 3,169,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
 
 Gosub cutfont
 GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
 
+VWait 200
+
 BLITZ
+Buffer 0,48000
+Buffer 1,48000
+
 
 ; the level array will hold the shape-ids to blit for each tile on the visible room
 Dim level.w (#TILES,#TILES)
@@ -169,15 +178,48 @@ SHARED level(), tileCoords()
 
  For z = 0 To #TILES - 1
    For x = 0 To #TILES  - 1
-     Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\y
+   If level (z,x) < 3
+     Blit level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y
+   Else
+     Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\y
+     ;Blit level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
+   EndIf
+
    Next
  Next
- GetaShape #RENDERED_LEVEL_SHAPE, 5,4,311,170
+ GetaShape #RENDERED_LEVEL_SHAPE, 5,4,311,180
+ Cls
+
+Use BitMap 1
+ Blit #RENDERED_LEVEL_SHAPE,0,0
+Use BitMap 2
+ Blit #RENDERED_LEVEL_SHAPE,0,0
+
 End Statement
 
+Statement DrawCharacter {posx, posy, bitm}
+  SHARED tileCoords()
+  BBlit bitm, #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\y - (#CHAR_HEIGHT) / 2
+End Statement
 
-Statement DrawLevel{}
- Blit #RENDERED_LEVEL_SHAPE,0,0
+Statement DrawLevel{posx, posy, bitm}
+SHARED level(),tileCoords()
+
+
+ ;Blit #RENDERED_LEVEL_SHAPE,0,0
+ UnBuffer bitm
+
+ DrawCharacter{posx,posy, bitm}
+
+ For z = 0 To #TILES - 1
+   For x = 0 To #TILES  - 1
+     If level (z,x) > = 3
+       BBlit bitm, level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
+     EndIf
+   Next
+ Next
+
+ ;BBlit bitm, #RENDERED_LEVEL_SHAPE_HIGH,0,0
 End Statement
 
 Statement DrawText {text.s}
@@ -189,15 +231,10 @@ Statement DrawText {text.s}
   Next
 End Statement
 
-Statement DrawCharacter {posx, posy}
-  SHARED tileCoords()
-  Blit #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\y - (#CHAR_HEIGHT) / 2
-End Statement
-
 Function.w CanMoveTo{posx, posy}
   SHARED level()
   canmove.w = -1
-  If level(posx, posy) = 1 Then canmove = 0
+  If level(posy, posx) = 1 Then canmove = 0
   Function Return canmove
 End Function
 
@@ -221,13 +258,10 @@ For x = 0 To #TILES - 1
  Next
 Next
 
-ando.character\pos\x = 4
+ando.character\pos\x = 1
 ando.character\pos\y = 4
 
 InitLevel{}
-DrawLevel {}
-DrawCharacter{ando\pos\x, ando\pos\y}
-
 BlitzKeys On
 
 
@@ -243,7 +277,6 @@ lastkey = #KEY_NONE
 keyheld = False
 
 Repeat
- DrawLevel{}
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    If CanMoveTo{ando\pos\x + 1, ando\pos\y}
      ando\pos\x = ando\pos\x + 1
@@ -277,26 +310,24 @@ Repeat
   lastkey = #KEY_NONE
  EndIf
 
- DrawCharacter{ando\pos\x, ando\pos\y}
-
- Gosub doubleBuf
  VWait
+ Gosub doubleBuf
+ DrawLevel{ando\pos\x,ando\pos\y, bitm}
 Until Joyb(0)
+
 End
 
 leveldata :
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,2,2,2,2,2,2,0,0,0,0
-Data.w  0,0,2,1,1,1,1,2,0,0,0,0
-Data.w  0,0,2,1,1,1,1,2,0,0,0,0
-Data.w  0,0,2,1,1,1,1,2,0,0,0,0
-Data.w  0,0,2,2,2,2,2,2,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,3,0,3,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,2,2,2,2,2,2,0,0
+Data.w  0,0,2,1,1,1,1,2,0,0
+Data.w  0,0,2,1,1,1,1,2,0,3
+Data.w  0,0,2,1,1,1,1,2,0,0
+Data.w  0,0,2,2,2,2,2,2,0,3
+Data.w  0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,0,0,0,0,0,0,0,0
+Data.w  0,0,3,0,3,0,0,0,0,0
 
 cutfont :
  For n = 0 To 25
@@ -309,5 +340,5 @@ Return
 
  bitm = 1 - bitm
  Use BitMap bitm + 1
- Cls
+ ;Cls
 Return
