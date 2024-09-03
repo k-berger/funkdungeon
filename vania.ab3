@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 281
+; NumberOfBuilds  = 302
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 167
-; CursorColumn    = 51
+; CursorLine      = 185
+; CursorColumn    = 70
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -115,9 +115,6 @@ End NEWTYPE
 #CHAR_WIDTH = 26
 #CHAR_HEIGHT = 17
 
-#RENDERED_LEVEL_SHAPE = 29
-#RENDERED_LEVEL_SHAPE_HIGH = 30
-#CHAR_SHAPE_MIN = 31
 
 #FONT_HEIGHT = 5
 #FONT_WIDTH = 4
@@ -125,9 +122,14 @@ End NEWTYPE
 #TOP_BITMAP = 0
 #SHAPE_SHEET_BITMAP = 3
 
-; index of the first letter shape
-#FONT_SHAPE_INDEX = 4
+#SHAPE_COLUMN = 3
+#SHAPE_WALL_H = 4
 
+; index of the first letter shape
+#FONT_SHAPE_INDEX = #SHAPE_WALL_H + 1
+#RENDERED_LEVEL_SHAPE = #FONT_SHAPE_INDEX + 26
+#RENDERED_LEVEL_SHAPE_HIGH = #RENDERED_LEVEL_SHAPE + 1
+#CHAR_SHAPE_MIN = #RENDERED_LEVEL_SHAPE_HIGH + 1
 
 ; we take all the shapes we need from a shape-sheet style bitmap
 LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
@@ -139,7 +141,10 @@ For y = 0 To 2
 Next
 ; cutting "high" tiles here (doors, walls, etc.)
 
-GetaShape 3,169,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
+
+For h = 0 To 1
+GetaShape #SHAPE_COLUMN + h,141 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
+Next
 
 Gosub cutfont
 GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
@@ -176,8 +181,8 @@ Statement InitLevel{}
 SHARED level(), tileCoords()
  Use BitMap  1
 
- For z = 0 To #TILES - 1
-   For x = 0 To #TILES  - 1
+ For x = 0 To #TILES - 1
+   For z = 0 To #TILES  - 1
    If level (z,x) < 3
      Blit level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y
    Else
@@ -187,15 +192,15 @@ SHARED level(), tileCoords()
 
    Next
  Next
- GetaShape #RENDERED_LEVEL_SHAPE, 5,4,311,180
+ GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
  Cls
 
 ; blit the ground-tiles on both double-buffer bitmaps so we can
 ; restore the background with BBlit/Unbuffer nicely
 Use BitMap 1
- Blit #RENDERED_LEVEL_SHAPE,5,4
+ Blit #RENDERED_LEVEL_SHAPE,0,0
 Use BitMap 2
- Blit #RENDERED_LEVEL_SHAPE,5,4
+ Blit #RENDERED_LEVEL_SHAPE,0,0
 
 End Statement
 
@@ -216,13 +221,13 @@ Statement DrawLevel{posx, posy, bitm}
   SHARED level(),tileCoords()
   UnBuffer bitm
 
-  For z = 0 To #TILES - 1
-    For x = 0 To #TILES  - 1
-      If z = posy AND x = posx
+  For x = 0 To #TILES - 1
+    For z = 0 To #TILES  - 1
+      If z = posx AND x = posy
         DrawCharacter{posx,posy, bitm}
       EndIf
       If level (z,x) > = 3
-        BBlit bitm, level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
+        BBlit bitm, level(z,x), tileCoords(z,x)\x , tileCoords(z,x)\y - 2 - #TILE_HEIGHT
       EndIf
     Next
   Next
@@ -254,7 +259,7 @@ Function.w CanMoveTo{posx, posy}
   If posy < 0 OR posy > #TILES - 1 Then canmove = 0
 
   ; make sure the target position isn't taken by something we can't pass
-  If level(posy, posx) = 1 OR level(posy,posx) = 3 Then canmove = 0
+  If level(posx, posy) = 1 OR level(posx,posy) = 3 OR level(posx,posy) = 4 Then canmove = 0
   Function Return canmove
 End Function
 
@@ -272,9 +277,9 @@ Cls 1
 DrawText{"THIS TEXT APPEARS IN THE TOP SLICE"}
 
 Restore leveldata
-For x = 0 To #TILES - 1
- For y = 0 To #TILES - 1
-  Read level(x,y)
+For z = 0 To #TILES - 1
+ For x = 0 To #TILES - 1
+  Read level(x,z)
  Next
 Next
 
@@ -340,16 +345,16 @@ End
 ; as long as there is a not actual core to the game, there is no point
 ; in designing any kind of levels. So we just read our shape-indices from this data-snippet
 leveldata :
-Data.w  0,0,3,0,3,0,0,0,0,0
+Data.w  0,0,3,0,0,0,0,0,0,0
 Data.w  0,0,0,0,0,0,0,0,0,0
+Data.w  4,0,2,2,2,2,2,2,0,0
+Data.w  4,0,2,1,1,1,1,2,0,0
+Data.w  4,0,2,1,1,1,1,2,0,3
+Data.w  4,0,2,1,1,1,1,2,0,0
 Data.w  0,0,2,2,2,2,2,2,0,0
-Data.w  0,0,2,1,1,1,1,2,0,0
-Data.w  0,0,2,1,1,1,1,2,0,3
-Data.w  0,0,2,1,1,1,1,2,0,0
-Data.w  0,0,2,2,2,2,2,2,0,3
 Data.w  0,0,0,0,0,0,0,0,0,0
 Data.w  0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,3,0,3,0,0,0,0,0
+Data.w  0,3,0,0,0,0,0,0,0,0
 
 cutfont :
  For n = 0 To 25
