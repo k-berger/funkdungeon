@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 182
+; NumberOfBuilds  = 238
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,11 +30,11 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 127
-; CursorColumn    = 1
-; LabelSearch     = ""
+; CursorLine      = 95
+; CursorColumn    = 17
+; LabelSearch     = "#yoffset"
 ; LabelRemark     = 0
-; LabelAll        = 0
+; LabelAll        = 1
 ; LabelPosition   = 0
 ; 
 ; Blitz Objects
@@ -75,11 +75,14 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
+WBStartup
+
 NoCli
 ; creating 3 bitmaps here for shape-sheet and double-buffer
-BitMap 0,320,256,6
-BitMap 1,320,256,6
-BitMap 2,320,256,6
+BitMap 0,320,44,6
+BitMap 1,320,200,6
+BitMap 2,320,200,6
+BitMap 3,320,200,6
 
 AMIGA
 
@@ -96,18 +99,18 @@ End NEWTYPE
 ; CONSTANTS FOR PLAYFIELD MATH
 ; ----------------------------
 
-#TILE_WIDTH = 22
+#TILE_WIDTH = 30
 ;We draw the tiles closer to one another, so the planes look better
-#HALFTILE_W = 10
-#HALFTILE_H = 5
+#HALFTILE_W = 15
+#HALFTILE_H = 8
 
-#TILE_HEIGHT = 14
-#OFFSETX = 28
-#OFFSETY = 14
+#TILE_HEIGHT = 23
+#OFFSETX = 203
+#OFFSETY = 6
 
-#TILES = 12
-#XOFFSET = 250 - (10 * #TILES )
-#YOFFSET = 60
+#TILES = 10
+#XOFFSET = 290 - (#HALFTILE_W * #TILES )
+#YOFFSET = 5
 
 #CHAR_WIDTH = 26
 #CHAR_HEIGHT = 17
@@ -118,10 +121,13 @@ End NEWTYPE
 #FONT_HEIGHT = 5
 #FONT_WIDTH = 4
 
+#TOP_BITMAP = 0
+#SHAPE_SHEET_BITMAP = 3
+
 
 ; we take all the shapes we need from a shape-sheet style bitmap
-LoadBitMap 0,"amiga:funkdungeon/vania_shapes.pic",0
-Use BitMap 0
+LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
+Use BitMap #SHAPE_SHEET_BITMAP
 
 ;Cutting tiles here. This should be refactored in to a statement and probably rethought...
 For y = 0 To 2
@@ -129,25 +135,24 @@ For y = 0 To 2
 Next
 
 Gosub cutfont
-
 GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
 
 BLITZ
 
 ; the level array will hold the shape-ids to blit for each tile on the visible room
 Dim level.w (#TILES,#TILES)
-SHARED level
+
 
 ; we use a lookup table for isometric coordinates, as that prevents us from calculating over
 ; and over and over and over again (anything that gets projected as part of double-buffering is
 ; based on that grid, so we better keep it somewhere
 
 Dim tileCoords.vec2 (#TILES, #TILES)
-SHARED tileCoords
+
 For z = 0 To #TILES - 1
   For x = 0 To #TILES  - 1
     tileCoords(x,z)\x = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
-    tileCoords(x,z)\y = 60 + (#HALFTILE_H * x) + (z * #HALFTILE_H)
+    tileCoords(x,z)\y = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
   Next
 Next
 ; we will be double-buffering (a very oldschool way of doing it, didn't catch up with the new AB3 caps...)
@@ -156,13 +161,17 @@ bitm = 1
 
 
 Statement InitLevel{}
+SHARED level(), tileCoords()
  Use BitMap  1
+
  For z = 0 To #TILES - 1
    For x = 0 To #TILES  - 1
      Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\y
    Next
  Next
- GetaShape #RENDERED_LEVEL_SHAPE, 0,0,319,255
+ Box 5,4,315,171,14
+
+ GetaShape #RENDERED_LEVEL_SHAPE, 0,0,319,200
 End Statement
 
 
@@ -174,31 +183,29 @@ Statement DrawText {text.s}
 For c = 1 To Len(text)
  sindex = Asc(Mid$(text,c,1)) - 65
  If sindex < 26
- Blit 3 + sindex,50 + c * (#FONT_WIDTH + 1),60
+   Blit 3 + sindex,10 + c * (#FONT_WIDTH + 1),3
  EndIf
 Next
+
 End Statement
 
 Statement DrawCharacter {posx, posy}
+  SHARED tileCoords()
   Blit #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\y - (#CHAR_HEIGHT) / 2
 End Statement
 
-InitCopList 0,44,30,$10008,0,64,0
-InitCopList 1,77,256 - 30 ,$10008,0,64,0
-
-;InitPalette 1,64
-
+InitCopList 0,44,30,$10006,0,64,0
 DisplayPalette 0,0
+DisplayBitMap 0,#TOP_BITMAP
+
+InitCopList 1,77,226 - 30 ,$10006,0,64,0
 DisplayPalette 1,0
-
-CreateDisplay 0
-DisplayBitMap 0,0
-
-CreateDisplay 1
 DisplayBitMap 1,1
+CreateDisplay 0,1
 
-
-Use BitMap 1
+Use BitMap #TOP_BITMAP
+Cls
+DrawText{"THIS TEXT APPEARS IN THE TOP SLICE"}
 
 Restore leveldata
 For x = 0 To #TILES - 1
@@ -230,7 +237,6 @@ keyheld = False
 
 Repeat
  DrawLevel{}
- DrawText {"DUDE DUDIKOV"}
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    ando\pos\x = ando\pos\x + 1
    lastkey = #KEY_RIGHT
@@ -257,6 +263,7 @@ Repeat
  EndIf
 
  DrawCharacter{ando\pos\x, ando\pos\y}
+
  Gosub doubleBuf
  VWait
 Until Joyb(0)
