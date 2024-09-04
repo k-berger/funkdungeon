@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 302
+; NumberOfBuilds  = 309
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,9 +30,9 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 185
-; CursorColumn    = 70
-; LabelSearch     = ""
+; CursorLine      = 177
+; CursorColumn    = 1
+; LabelSearch     = "line"
 ; LabelRemark     = 0
 ; LabelAll        = 0
 ; LabelPosition   = 0
@@ -83,6 +83,7 @@ BitMap 0,320,44,6
 BitMap 1,320,200,6
 BitMap 2,320,200,6
 BitMap 3,320,200,6
+BitMap 4,320,40,6
 
 AMIGA
 
@@ -129,8 +130,8 @@ End NEWTYPE
 #FONT_SHAPE_INDEX = #SHAPE_WALL_H + 1
 #RENDERED_LEVEL_SHAPE = #FONT_SHAPE_INDEX + 26
 #RENDERED_LEVEL_SHAPE_HIGH = #RENDERED_LEVEL_SHAPE + 1
-#CHAR_SHAPE_MIN = #RENDERED_LEVEL_SHAPE_HIGH + 1
-
+#INV_SHAPE_INDEX = #RENDERED_LEVEL_SHAPE_HIGH + 1
+#CHAR_SHAPE_MIN = #INV_SHAPE_INDEX + 1
 ; we take all the shapes we need from a shape-sheet style bitmap
 LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
 Use BitMap #SHAPE_SHEET_BITMAP
@@ -148,6 +149,9 @@ Next
 
 Gosub cutfont
 GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
+
+; cutting inventory and other status shapes
+GetaShape #INV_SHAPE_INDEX, 28,61,15,15
 
 VWait 50
 
@@ -233,7 +237,7 @@ Statement DrawLevel{posx, posy, bitm}
   Next
 End Statement
 
-Statement DrawText {text.s}
+Statement DrawText {row.w, text.s}
 ; we don't print text, we blit it. There is a fotn on the chaotic
 ; shape-sheet. Letters are cut out and then blitted based on the
 ; ascii-code of characters from the string.
@@ -241,10 +245,11 @@ Statement DrawText {text.s}
 ;   - Add lower-case
 ;   - add symbols
 ;   - Allow for layout (multiline specifically)
+startx.w = 160 - Len(text) * ((#FONT_WIDTH + 1) / 2)
  For c = 1 To Len(text)
    sindex = Asc(Mid$(text,c,1)) - 65
    If sindex > =0 AND sindex < 26
-     Blit #FONT_SHAPE_INDEX + sindex,10 + c * (#FONT_WIDTH + 1),3
+     Blit #FONT_SHAPE_INDEX + sindex,startx + c * (#FONT_WIDTH + 1),3 + row * (#FONT_HEIGHT + 1)
    EndIf
   Next
 End Statement
@@ -267,15 +272,23 @@ InitCopList 0,44,30,$10006,0,64,0
 DisplayPalette 0,0
 DisplayBitMap 0,#TOP_BITMAP
 
-InitCopList 1,77,226 - 30 ,$10006,0,64,0
+InitCopList 1,77,236 - 30 - 33 ,$10006,0,64,0
 DisplayPalette 1,0
 DisplayBitMap 1,1
-CreateDisplay 0,1
+
+InitCopList 2, 254, 30 ,$10006,0,64,0
+DisplayPalette 2,0
+DisplayBitMap 2,4
+
+CreateDisplay 0,1,2
 
 Use BitMap #TOP_BITMAP
-Cls 1
-DrawText{"THIS TEXT APPEARS IN THE TOP SLICE"}
-
+For i = 0 To 4
+  Blit #INV_SHAPE_INDEX, 5 + (16 * i),5
+Next
+Use BitMap 4
+DrawText{1, "THIS TEXT APPEARS IN THE TOP SLICE"}
+DrawText{2, "CENTERED AND MULTILINED"}
 Restore leveldata
 For z = 0 To #TILES - 1
  For x = 0 To #TILES - 1
