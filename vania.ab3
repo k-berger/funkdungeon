@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 309
+; NumberOfBuilds  = 332
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 177
-; CursorColumn    = 1
+; CursorLine      = 202
+; CursorColumn    = 24
 ; LabelSearch     = "line"
 ; LabelRemark     = 0
 ; LabelAll        = 0
@@ -89,8 +89,8 @@ AMIGA
 
 ; couple types for handling state easier
 NEWTYPE .vec2
+  z.q
   x.q
-  y.q
 End NEWTYPE
 
 NEWTYPE .character
@@ -99,6 +99,8 @@ End NEWTYPE
 
 ; CONSTANTS FOR PLAYFIELD MATH
 ; ----------------------------
+
+
 
 ;We draw the tiles closer to one another, so the planes look better
 #HALFTILE_W = 15
@@ -122,6 +124,7 @@ End NEWTYPE
 
 #TOP_BITMAP = 0
 #SHAPE_SHEET_BITMAP = 3
+#LOWER_BITMAP = 4
 
 #SHAPE_COLUMN = 3
 #SHAPE_WALL_H = 4
@@ -170,10 +173,10 @@ Dim level.w (#TILES,#TILES)
 
 Dim tileCoords.vec2 (#TILES, #TILES)
 
-For z = 0 To #TILES - 1
-  For x = 0 To #TILES  - 1
+For x = 0 To #TILES - 1
+  For z = 0 To #TILES  - 1
     tileCoords(x,z)\x = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
-    tileCoords(x,z)\y = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
+    tileCoords(x,z)\z = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
   Next
 Next
 ; we will be double-buffering (a very oldschool way of doing it, didn't catch up with the new AB3 caps...)
@@ -187,13 +190,11 @@ SHARED level(), tileCoords()
 
  For x = 0 To #TILES - 1
    For z = 0 To #TILES  - 1
-   If level (z,x) < 3
-     Blit level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y
-   Else
-     Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\y
-     ;Blit level(z,x), tileCoords(x,z)\x, tileCoords(x,z)\y - #TILE_HEIGHT
-   EndIf
-
+    If level (x,z) < 3
+      Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
+    Else
+      Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
+    EndIf
    Next
  Next
  GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
@@ -212,7 +213,7 @@ Statement DrawCharacter {posx, posy, bitm}
 ; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
 ; to avoid another stack level
   SHARED tileCoords()
-  BBlit bitm, #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\y - (#CHAR_HEIGHT) / 2
+  BBlit bitm, #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\z - (#CHAR_HEIGHT) / 2
 End Statement
 
 Statement DrawLevel{posx, posy, bitm}
@@ -225,13 +226,13 @@ Statement DrawLevel{posx, posy, bitm}
   SHARED level(),tileCoords()
   UnBuffer bitm
 
-  For x = 0 To #TILES - 1
-    For z = 0 To #TILES  - 1
-      If z = posx AND x = posy
+  For z = 0 To #TILES - 1
+    For x = 0 To #TILES  - 1
+      If x = posx AND z = posy
         DrawCharacter{posx,posy, bitm}
       EndIf
-      If level (z,x) > = 3
-        BBlit bitm, level(z,x), tileCoords(z,x)\x , tileCoords(z,x)\y - 2 - #TILE_HEIGHT
+      If level (x,z) > = 3
+        BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z - 2 - #TILE_HEIGHT
       EndIf
     Next
   Next
@@ -245,13 +246,18 @@ Statement DrawText {row.w, text.s}
 ;   - Add lower-case
 ;   - add symbols
 ;   - Allow for layout (multiline specifically)
-startx.w = 160 - Len(text) * ((#FONT_WIDTH + 1) / 2)
+ Use BitMap #LOWER_BITMAP
+ top.w = 3 + (row * (#FONT_HEIGHT + 1))
+ Boxf 10, top, 300, top + #FONT_HEIGHT,0
+
+ startx.w = 160 - Len(text) * ((#FONT_WIDTH + 1) / 2)
  For c = 1 To Len(text)
    sindex = Asc(Mid$(text,c,1)) - 65
    If sindex > =0 AND sindex < 26
-     Blit #FONT_SHAPE_INDEX + sindex,startx + c * (#FONT_WIDTH + 1),3 + row * (#FONT_HEIGHT + 1)
+     Blit #FONT_SHAPE_INDEX + sindex,startx + c * (#FONT_WIDTH + 1),top
    EndIf
-  Next
+ Next
+ Use BitMap bitm + 1
 End Statement
 
 Function.w CanMoveTo{posx, posy}
@@ -260,11 +266,19 @@ Function.w CanMoveTo{posx, posy}
   SHARED level()
   canmove.w = -1
   ; make sure to not cross the playfield
-  If posx < 0 OR posx > #TILES - 1 Then canmove = 0
-  If posy < 0 OR posy > #TILES - 1 Then canmove = 0
+  If posx < 0 OR posx > #TILES - 1
+    canmove = 0
+  EndIf
+
+  If posy < 0 OR posy > #TILES - 1
+   canmove = 0
+  EndIf
 
   ; make sure the target position isn't taken by something we can't pass
-  If level(posx, posy) = 1 OR level(posx,posy) = 3 OR level(posx,posy) = 4 Then canmove = 0
+  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H
+    canmove = 0
+  EndIf
+
   Function Return canmove
 End Function
 
@@ -286,7 +300,8 @@ Use BitMap #TOP_BITMAP
 For i = 0 To 4
   Blit #INV_SHAPE_INDEX, 5 + (16 * i),5
 Next
-Use BitMap 4
+
+Use BitMap #LOWER_BITMAP
 DrawText{1, "THIS TEXT APPEARS IN THE TOP SLICE"}
 DrawText{2, "CENTERED AND MULTILINED"}
 Restore leveldata
@@ -297,7 +312,7 @@ For z = 0 To #TILES - 1
 Next
 
 ando.character\pos\x = 1
-ando.character\pos\y = 4
+ando.character\pos\z = 4
 
 InitLevel{}
 BlitzKeys On
@@ -316,29 +331,29 @@ keyheld = False
 
 Repeat
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
-   If CanMoveTo{ando\pos\x + 1, ando\pos\y}
+   If CanMoveTo{ando\pos\x + 1 , ando\pos\z}
      ando\pos\x = ando\pos\x + 1
    EndIf
    lastkey = #KEY_RIGHT
    keyheld = True
  EndIf
  If RawStatus(#KEY_LEFT) = -1 AND lastkey <> #KEY_LEFT
-   If CanMoveTo{ando\pos\x - 1, ando\pos\y}
+   If CanMoveTo{ando\pos\x - 1, ando\pos\z}
      ando\pos\x = ando\pos\x - 1
    EndIf
    lastkey = #KEY_LEFT
    keyheld = True
  EndIf
  If RawStatus(#KEY_UP) = -1   AND lastkey <> #KEY_UP
-  If CanMoveTo{ando\pos\x , ando\pos\y - 1}
-    ando\pos\y = ando\pos\y - 1
+  If CanMoveTo{ando\pos\x , ando\pos\z - 1}
+    ando\pos\z = ando\pos\z - 1
   EndIf
   lastkey = #KEY_UP
   keyheld = True
  EndIf
  If RawStatus(#KEY_DOWN) = -1 AND lastkey <> #KEY_DOWN
-   If CanMoveTo{ando\pos\x, ando\pos\y + 1}
-     ando\pos\y = ando\pos\y + 1
+   If CanMoveTo{ando\pos\x, ando\pos\z + 1}
+     ando\pos\z = ando\pos\z + 1
    EndIf
    lastkey = #KEY_DOWN
    keyheld = True
@@ -350,7 +365,7 @@ Repeat
 
  VWait
  Gosub doubleBuf
- DrawLevel{ando\pos\x,ando\pos\y, bitm}
+ DrawLevel{ando\pos\x,ando\pos\z, bitm}
 Until Joyb(0)
 
 End
