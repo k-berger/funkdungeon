@@ -1,0 +1,128 @@
+; XTRA
+; Embedded .xtra Header
+; 
+; General Info
+; -------------------------------------------------------
+; ExePath         = "ram:"
+; ExeFile         = "Empty"
+; CreateIcon      = 0
+; Residents       = "all.res"
+; 
+; Compiler
+; -------------------------------------------------------
+; StringBuffer    = 100000
+; MakeSmallest    = 1
+; FuncOptimize    = 1
+; Version         = 0.0.0
+; NumberOfBuilds  = 338
+; 
+; Debugger
+; -------------------------------------------------------
+; CliArgs         = ""
+; StackSize       = 8192
+; RuntimeDebug    = 0
+; DebugInfo       = 0
+; CreateDbgFile   = 0
+; OverflowCheck   = 0
+; AssemblerCheck  = 0
+; InterruptCheck  = 1
+; AutoRun         = 1
+; 
+; Editor
+; -------------------------------------------------------
+; CursorLine      = 50
+; CursorColumn    = 39
+; LabelSearch     = ""
+; LabelRemark     = 0
+; LabelAll        = 1
+; LabelPosition   = 0
+; 
+; Blitz Objects
+; -------------------------------------------------------
+; Max File        = 100
+; Max GadgetList  = 100
+; Max Shape       = 200
+; Max Bank        = 1
+; Max MenuList    = 100
+; Max GTList      = 100
+; Max Palette     = 4
+; Max BitMap      = 10
+; Max Screen      = 5
+; Max IntuiFont   = 10
+; Max BlitzFont   = 1
+; Max Window      = 100
+; Max IconInfo    = 1
+; Max MUIObject   = 50
+; Max AsyncReq    = 4
+; Max Req-Lib     = 5
+; Max GTMenuList  = 100
+; Max Console     = 5
+; Max TCPSock     = 5
+; Max Tape        = 5
+; Max Sound       = 10
+; Max MedModule   = 8
+; Max Buffer      = 10
+; Max Queue       = 10
+; Max Sprite      = 20
+; Max Module      = 5
+; Max Slice       = 10
+; Max Page        = 4
+; Max CopList     = 10
+; Max PTModule    = 5
+; Max Anim        = 10
+; Max NChunky     = 50
+; Max Chunky      = 20
+; Max Stencil     = 5
+; Max XBSound     = 10
+; /XTRA
+
+; CONSTANTS FOR PLAYFIELD MATH
+; ----------------------------
+
+
+
+;We draw the tiles closer to one another, so the planes look better
+#HALFTILE_W = 15
+#HALFTILE_H = 8
+
+#TILE_WIDTH = 30
+#TILE_HEIGHT = 23
+#OFFSETX = 203
+#OFFSETY = 6
+
+#TILES = 10
+#XOFFSET = 295 - (#HALFTILE_W * #TILES )
+#YOFFSET = 5
+
+#CHAR_WIDTH = 26
+#CHAR_HEIGHT = 17
+
+
+#FONT_HEIGHT = 5
+#FONT_WIDTH = 4
+
+#TOP_BITMAP = 0
+#SHAPE_SHEET_BITMAP = 3
+#LOWER_BITMAP = 4
+
+#SHAPE_COLUMN = 3
+#SHAPE_WALL_H = 4
+
+; index of the first letter shape
+#FONT_SHAPE_INDEX = #SHAPE_WALL_H + 1
+#RENDERED_LEVEL_SHAPE = #FONT_SHAPE_INDEX + 26
+#RENDERED_LEVEL_SHAPE_HIGH = #RENDERED_LEVEL_SHAPE + 1
+
+; Inventory shapes (indices, positions on sheet, dimensions)
+#INV_FRAME_INDEX = #RENDERED_LEVEL_SHAPE_HIGH + 1
+#INV_SHAPES_MIN = #INV_FRAME_INDEX + 1
+#INV_SHAPES_NUM = 4
+#INV_SHAPES_MAX = #INV_FRAME_INDEX + #INV_SHAPES_NUM
+#INV_SHAPES_X = 28
+#INV_SHAPES_Y = 78
+#INV_SHAPES_W = 11
+#INV_SHAPES_H = 11
+
+#CHAR_SHAPE_MIN = #INV_SHAPES_MAX + 1
+
+
