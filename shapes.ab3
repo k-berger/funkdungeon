@@ -1,0 +1,139 @@
+; XTRA
+; Embedded .xtra Header
+; 
+; General Info
+; -------------------------------------------------------
+; ExePath         = "ram:"
+; ExeFile         = "Empty"
+; CreateIcon      = 0
+; Residents       = "all.res"
+; 
+; Compiler
+; -------------------------------------------------------
+; StringBuffer    = 100000
+; MakeSmallest    = 1
+; FuncOptimize    = 1
+; Version         = 0.0.0
+; NumberOfBuilds  = 354
+; 
+; Debugger
+; -------------------------------------------------------
+; CliArgs         = ""
+; StackSize       = 8192
+; RuntimeDebug    = 0
+; DebugInfo       = 0
+; CreateDbgFile   = 0
+; OverflowCheck   = 0
+; AssemblerCheck  = 0
+; InterruptCheck  = 1
+; AutoRun         = 1
+; 
+; Editor
+; -------------------------------------------------------
+; CursorLine      = 10
+; CursorColumn    = 1
+; LabelSearch     = "shape_sh"
+; LabelRemark     = 0
+; LabelAll        = 1
+; LabelPosition   = 0
+; 
+; Blitz Objects
+; -------------------------------------------------------
+; Max File        = 100
+; Max GadgetList  = 100
+; Max Shape       = 200
+; Max Bank        = 1
+; Max MenuList    = 100
+; Max GTList      = 100
+; Max Palette     = 4
+; Max BitMap      = 10
+; Max Screen      = 5
+; Max IntuiFont   = 10
+; Max BlitzFont   = 1
+; Max Window      = 100
+; Max IconInfo    = 1
+; Max MUIObject   = 50
+; Max AsyncReq    = 4
+; Max Req-Lib     = 5
+; Max GTMenuList  = 100
+; Max Console     = 5
+; Max TCPSock     = 5
+; Max Tape        = 5
+; Max Sound       = 10
+; Max MedModule   = 8
+; Max Buffer      = 10
+; Max Queue       = 10
+; Max Sprite      = 20
+; Max Module      = 5
+; Max Slice       = 10
+; Max Page        = 4
+; Max CopList     = 10
+; Max PTModule    = 5
+; Max Anim        = 10
+; Max NChunky     = 50
+; Max Chunky      = 20
+; Max Stencil     = 5
+; Max XBSound     = 10
+; /XTRA
+; ******************************************
+; *   VANIA SHAPES MANAGEMENT INCLUDE      *
+; ******************************************
+; * Contains Functions and Statements for  *
+; * - Managing Shape-Sheet Bitmaps         *
+; * - Cookie-Cutting, storing shapes       *
+; * - Accessing Shapes                     *
+; ******************************************
+XINCLUDE "constants.ab3"
+
+Statement Shapes_SetupShapeSheet{}
+  BitMap #SHAPE_SHEET_BITMAP,320,200,6
+  LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
+End Statement
+
+Statement Shapes_CutShapes{}
+  ; we take all the shapes we need from a shape-sheet style bitmap
+  Use BitMap #SHAPE_SHEET_BITMAP
+
+  ;Cutting tiles here. This should be refactored in to a statement and probably rethought...
+  For y = 0 To 2
+    GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
+  Next
+
+  ; cutting "high" tiles here (doors, walls, etc.)
+  For h = 0 To 1
+    GetaShape #SHAPE_COLUMN + h,141 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
+  Next
+
+  For n = 0 To 25
+    GetaShape #FONT_SHAPE_INDEX + n,26 + (n * #FONT_WIDTH) + n,103, #FONT_WIDTH, #FONT_HEIGHT
+  Next
+  GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
+
+  ; cutting inventory and other status shapes
+  GetaShape #INV_FRAME_INDEX, 28,61,15,15
+
+  For i = 0 To #INV_SHAPES_NUM - 1
+    GetaShape #INV_SHAPES_MIN + i, #INV_SHAPES_X + (#INV_SHAPES_W * i) + i, #INV_SHAPES_Y, #INV_SHAPES_W, #INV_SHAPES_H
+  Next
+End Statement
+
+Statement DrawText {row.w, text.s}
+; we don't print text, we blit it. There is a fotn on the chaotic
+; shape-sheet. Letters are cut out and then blitted based on the
+; ascii-code of characters from the string.
+; TODO:
+;   - Add lower-case
+;   - add symbols
+ Use BitMap #LOWER_BITMAP
+ top.w = 3 + (row * (#FONT_HEIGHT + 1))
+ Boxf 10, top, 300, top + #FONT_HEIGHT,0
+
+ startx.w = 160 - Len(text) * ((#FONT_WIDTH + 1) / 2)
+ For c = 1 To Len(text)
+   sindex = Asc(UCase$(Mid$(text,c,1))) - 65
+   If sindex > =0 AND sindex < 26
+     Blit #FONT_SHAPE_INDEX + sindex,startx + c * (#FONT_WIDTH + 1),top
+   EndIf
+ Next
+ Use BitMap bitm + 1
+End Statement

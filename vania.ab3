@@ -14,24 +14,24 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 343
+; NumberOfBuilds  = 391
 ; 
 ; Debugger
 ; -------------------------------------------------------
 ; CliArgs         = ""
 ; StackSize       = 8192
-; RuntimeDebug    = 0
+; RuntimeDebug    = 1
 ; DebugInfo       = 0
 ; CreateDbgFile   = 0
-; OverflowCheck   = 0
+; OverflowCheck   = 1
 ; AssemblerCheck  = 0
 ; InterruptCheck  = 1
 ; AutoRun         = 1
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 19
-; CursorColumn    = 24
+; CursorLine      = 97
+; CursorColumn    = 77
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -79,200 +79,46 @@
 WBStartup
 AMIGA
 
-INCLUDE "types.ab3"
-INCLUDE "constants.ab3"
+XINCLUDE "types.ab3"
+XINCLUDE "constants.ab3"
+XINCLUDE "shapes.ab3"
+XINCLUDE "display.ab3"
 
 NoCli
-; creating 4 bitmaps here for the top slice, shape-sheet and double-buffer
-BitMap #TOP_BITMAP,320,44,6
-BitMap 1,320,200,6
-BitMap 2,320,200,6
-BitMap #SHAPE_SHEET_BITMAP,320,200,6
-BitMap #LOWER_BITMAP,320,40,6
 
-; we take all the shapes we need from a shape-sheet style bitmap
-LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
-Use BitMap #SHAPE_SHEET_BITMAP
-
-;Cutting tiles here. This should be refactored in to a statement and probably rethought...
-For y = 0 To 2
- GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
-Next
-; cutting "high" tiles here (doors, walls, etc.)
-
-
-For h = 0 To 1
- GetaShape #SHAPE_COLUMN + h,141 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
-Next
-
-Gosub cutfont
-GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
-
-; cutting inventory and other status shapes
-GetaShape #INV_FRAME_INDEX, 28,61,15,15
-
-For i = 0 To #INV_SHAPES_NUM - 1
-  GetaShape #INV_SHAPES_MIN + i, #INV_SHAPES_X + (#INV_SHAPES_W * i) + i, #INV_SHAPES_Y, #INV_SHAPES_W, #INV_SHAPES_H
-Next
-
-VWait 50
-
-BLITZ
-
-
-INCLUDE "display.ab3"
-
-Buffer 0,48000
-Buffer 1,48000
-
-
-; the level array will hold the shape-ids to blit for each tile on the visible room
-Dim level.w (#TILES,#TILES)
-
-
-; we use a lookup table for isometric coordinates, as that prevents us from calculating over
-; and over and over and over again (anything that gets projected as part of double-buffering is
-; based on that grid, so we better keep it somewhere
-
-Dim tileCoords.vec2 (#TILES, #TILES)
-
-For x = 0 To #TILES - 1
-  For z = 0 To #TILES  - 1
-    tileCoords(x,z)\x = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
-    tileCoords(x,z)\z = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
-  Next
-Next
-; we will be double-buffering (a very oldschool way of doing it, didn't catch up with the new AB3 caps...)
-; this is the bitmap to blit to
-bitm = 1
-
-
-Statement InitLevel{}
-SHARED level(), tileCoords()
- Use BitMap  1
-
- For x = 0 To #TILES - 1
-   For z = 0 To #TILES  - 1
-    If level (x,z) < 3
-      Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
-    Else
-      Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
-    EndIf
-   Next
- Next
- GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
- Cls
-
-; blit the ground-tiles on both double-buffer bitmaps so we can
-; restore the background with BBlit/Unbuffer nicely
-Use BitMap 1
- Blit #RENDERED_LEVEL_SHAPE,0,0
-Use BitMap 2
- Blit #RENDERED_LEVEL_SHAPE,0,0
-
-End Statement
-
-Statement DrawCharacter {posx, posy, bitm}
-; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
-; to avoid another stack level
-  SHARED tileCoords()
-  BBlit bitm, #CHAR_SHAPE_MIN, tileCoords(posx,posy)\x,tileCoords(posx, posy)\z - (#CHAR_HEIGHT) / 2
-End Statement
-
-Statement DrawLevel{posx, posy, bitm}
-  ; arguments: x-position and y-position of character
-  ;            bitmap to draw on(
-  ; drawing the level consists of
-  ;  - drawing floor-tiles (immutable, pre-rendered per room in InitLevel)
-  ;  - drawing high tiles (walls, doorways, ...)
-  ;  - drawing character, enemies and items at the right time (ordering is important for "depth")
-  SHARED level(),tileCoords()
-  UnBuffer bitm
-
-  For z = 0 To #TILES - 1
-    For x = 0 To #TILES  - 1
-      If x = posx AND z = posy
-        DrawCharacter{posx,posy, bitm}
-      EndIf
-      If level (x,z) > = 3
-        BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z - 2 - #TILE_HEIGHT
-      EndIf
-    Next
-  Next
-End Statement
-
-Statement DrawText {row.w, text.s}
-; we don't print text, we blit it. There is a fotn on the chaotic
-; shape-sheet. Letters are cut out and then blitted based on the
-; ascii-code of characters from the string.
-; TODO:
-;   - Add lower-case
-;   - add symbols
- Use BitMap #LOWER_BITMAP
- top.w = 3 + (row * (#FONT_HEIGHT + 1))
- Boxf 10, top, 300, top + #FONT_HEIGHT,0
-
- startx.w = 160 - Len(text) * ((#FONT_WIDTH + 1) / 2)
- For c = 1 To Len(text)
-   sindex = Asc(UCase$(Mid$(text,c,1))) - 65
-   If sindex > =0 AND sindex < 26
-     Blit #FONT_SHAPE_INDEX + sindex,startx + c * (#FONT_WIDTH + 1),top
-   EndIf
- Next
- Use BitMap bitm + 1
-End Statement
-
-Function.w CanMoveTo{posx, posy}
-; determine whether the character can move to the coordinates passed
-; we obviously can't walk over water/acid/lava or through brickwalls
-  SHARED level()
-  canmove.w = -1
-  ; make sure to not cross the playfield
-  If posx < 0 OR posx > #TILES - 1
-    canmove = 0
-  EndIf
-
-  If posy < 0 OR posy > #TILES - 1
-   canmove = 0
-  EndIf
-
-  ; make sure the target position isn't taken by something we can't pass
-  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H
-    canmove = 0
-  EndIf
-
-  Function Return canmove
-End Function
-
-InitDisplay{}
-
-
+Shapes_SetupShapeSheet{}
+Shapes_CutShapes{}
+Display_CreateBitmaps{}
 
 Dim inventoryList.inventory(5)
 inventoryList(0)\shapeId = #INV_SHAPES_MIN + 1
 inventoryList(0)\name = "Golden Key"
+
+DrawText{1, "This is where it all begins"}
+DrawText{2, "It is unclear though what it is"}
+
+Display_PrecalcTileCoords{}
+Display_LoadLevel{}
+Display_InitLevel{}
+
+BLITZ
+INCLUDE "display_blitz.ab3"
+
+Buffer 0,48000
+Buffer 1,48000
+Display_InitDisplay{}
 
 Use BitMap #TOP_BITMAP
 For i = 0 To 4
   Blit #INV_FRAME_INDEX, 5 + (16 * i),5
 Next
 
-Blit inventoryList(0)\shapeId,7,7
-
 Use BitMap #LOWER_BITMAP
-DrawText{1, "This is where it all begins"}
-DrawText{2, "It is unclear though what it is"}
-Restore leveldata
-For z = 0 To #TILES - 1
- For x = 0 To #TILES - 1
-  Read level(x,z)
- Next
-Next
+ando.character\realpos\x = Display_GetTileCoordsX{4,2}
+ando.character\realpos\z = Display_GetTileCoordsZ{4,2}
+ando.character\matrixpos\x = 4
+ando.character\matrixpos\z = 2
 
-ando.character\pos\x = 1
-ando.character\pos\z = 4
-
-InitLevel{}
 BlitzKeys On
 
 
@@ -283,35 +129,38 @@ BlitzKeys On
 #KEY_RIGHT = $4e
 #KEY_NONE = 0
 
-bitm = 0
+#CHAR_SPEED = 2
+#X_DIFF = #TILE_WIDTH / #CHAR_SPEED
+#Z_DIFF = #TILE_HEIGHT / #CHAR_SPEED
+
 lastkey = #KEY_NONE
 keyheld = False
 
 Repeat
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
-   If CanMoveTo{ando\pos\x + 1 , ando\pos\z}
-     ando\pos\x = ando\pos\x + 1
+   If CanMoveTo{ando\matrixpos\x + 1 , ando\matrixpos\z}
+     ando\matrixpos\x = ando\matrixpos\x + 1
    EndIf
    lastkey = #KEY_RIGHT
    keyheld = True
  EndIf
  If RawStatus(#KEY_LEFT) = -1 AND lastkey <> #KEY_LEFT
-   If CanMoveTo{ando\pos\x - 1, ando\pos\z}
-     ando\pos\x = ando\pos\x - 1
+   If CanMoveTo{ando\matrixpos\x - 1, ando\matrixpos\z}
+    ando\matrixpos\x = ando\matrixpos\x - 1
    EndIf
    lastkey = #KEY_LEFT
    keyheld = True
  EndIf
  If RawStatus(#KEY_UP) = -1   AND lastkey <> #KEY_UP
-  If CanMoveTo{ando\pos\x , ando\pos\z - 1}
-    ando\pos\z = ando\pos\z - 1
+  If CanMoveTo{ando\matrixpos\x , ando\matrixpos\z - 1}
+   ando\matrixpos\z = ando\matrixpos\z - 1
   EndIf
   lastkey = #KEY_UP
   keyheld = True
  EndIf
  If RawStatus(#KEY_DOWN) = -1 AND lastkey <> #KEY_DOWN
-   If CanMoveTo{ando\pos\x, ando\pos\z + 1}
-     ando\pos\z = ando\pos\z + 1
+   If CanMoveTo{ando\matrixpos\x, ando\matrixpos\z + 1}
+    ando\matrixpos\z = ando\matrixpos\z + 1
    EndIf
    lastkey = #KEY_DOWN
    keyheld = True
@@ -321,37 +170,12 @@ Repeat
   lastkey = #KEY_NONE
  EndIf
 
+ ando\realpos\x = Display_GetTileCoordsX{ando\matrixpos\x, ando\matrixpos\z}
+ ando\realpos\z = Display_GetTileCoordsZ{ando\matrixpos\x, ando\matrixpos\z}
  VWait
- Gosub doubleBuf
- DrawLevel{ando\pos\x,ando\pos\z, bitm}
+
+ Display_DoubleBuffer{}
+ Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
 Until Joyb(0)
 
 End
-
-; as long as there is a not actual core to the game, there is no point
-; in designing any kind of levels. So we just read our shape-indices from this data-snippet
-leveldata :
-Data.w  0,0,3,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0
-Data.w  4,0,2,2,2,2,2,2,0,0
-Data.w  4,0,2,1,1,1,1,2,0,0
-Data.w  4,0,2,1,1,1,1,2,0,3
-Data.w  4,0,2,1,1,1,1,2,0,0
-Data.w  0,0,2,2,2,2,2,2,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0
-Data.w  0,0,0,0,0,0,0,0,0,0
-Data.w  0,3,0,0,0,0,0,0,0,0
-
-cutfont :
- For n = 0 To 25
-  GetaShape #FONT_SHAPE_INDEX + n,26 + (n * #FONT_WIDTH) + n,103, #FONT_WIDTH, #FONT_HEIGHT
- Next
-Return
-
-.doubleBuf:
- DisplayBitMap 1,bitm + 1
-
- bitm = 1 - bitm
- Use BitMap bitm + 1
- ;Cls
-Return
