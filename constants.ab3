@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 338
+; NumberOfBuilds  = 340
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 50
-; CursorColumn    = 39
+; CursorLine      = 21
+; CursorColumn    = 49
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -75,11 +75,8 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
-
 ; CONSTANTS FOR PLAYFIELD MATH
 ; ----------------------------
-
-
 
 ;We draw the tiles closer to one another, so the planes look better
 #HALFTILE_W = 15
@@ -90,9 +87,9 @@
 #OFFSETX = 203
 #OFFSETY = 6
 
-#TILES = 10
-#XOFFSET = 295 - (#HALFTILE_W * #TILES )
-#YOFFSET = 5
+;#TILES = 10
+;#XOFFSET = 295 - (#HALFTILE_W * #TILES )
+;#YOFFSET = 5
 
 #CHAR_WIDTH = 26
 #CHAR_HEIGHT = 17
@@ -124,5 +121,4 @@
 #INV_SHAPES_H = 11
 
 #CHAR_SHAPE_MIN = #INV_SHAPES_MAX + 1
-
 

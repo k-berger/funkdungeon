@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 332
+; NumberOfBuilds  = 354
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,9 +30,9 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 15
-; CursorColumn    = 20
-; LabelSearch     = "inv"
+; CursorLine      = 1
+; CursorColumn    = 1
+; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
 ; LabelPosition   = 0
@@ -75,25 +75,52 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
+; Parts of the code in this file require BLITZ mode. Please only include
+; when you switched to BLITZ
 
-; couple types for handling state easier
-NEWTYPE .vec2
-  z.q
-  x.q
-End NEWTYPE
+XINCLUDE "constants.ab3"
 
-NEWTYPE.inventory
-  shapeId.w
-  name.s
-End NEWTYPE
+Statement Display_InitDisplay{}
+  InitCopList 0,#DISP_TOP,#DISP_FIRST_HEIGHT,$10006,0,64,0
+  DisplayPalette 0,0
+  DisplayBitMap 0,#TOP_BITMAP
 
-NEWTYPE.item
-  pos.vec2
-  details.inventory
-End NEWTYPE
+  InitCopList 1, #DISP_GAMESTAGE_TOP,#DISP_GAMESTAGE_HEIGHT ,$10006,0,64,0
+  DisplayPalette 1,0
+  DisplayBitMap 1,1
 
-NEWTYPE .character
-  matrixpos.vec2
-  realpos.vec2
-  dir.vec2
-End NEWTYPE
+  InitCopList 2, #DISP_BOTTOM_TOP, #DISP_BOTTOM_HEIGHT ,$10006,0,64,0
+  DisplayPalette 2,0
+  DisplayBitMap 2,4
+
+  CreateDisplay 0,1,2
+End Statement
+
+Statement Display_DrawCharacter {posx, posy, bitm}
+; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
+; to avoid another stack level
+  ; SHARED tileCoords()
+  BBlit bitm, #CHAR_SHAPE_MIN, posx, posy - (#CHAR_HEIGHT) / 2
+End Statement
+
+Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
+  ; arguments: x-position and y-position of character
+  ;            bitmap to draw on(
+  ; drawing the level consists of
+  ;  - drawing floor-tiles (immutable, pre-rendered per room in InitLevel)
+  ;  - drawing high tiles (walls, doorways, ...)
+  ;  - drawing character, enemies and items at the right time (ordering is important for "depth")
+  SHARED level(),tileCoords()
+  UnBuffer bitm
+
+  For z = 0 To #TILES - 1
+    For x = 0 To #TILES  - 1
+      If x = posx AND z = posy
+        Display_DrawCharacter{rposx,rposy, bitm}
+      EndIf
+      If level (x,z) > = 3
+        BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z - 2 - #TILE_HEIGHT
+      EndIf
+    Next
+  Next
+End Statement

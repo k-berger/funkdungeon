@@ -14,25 +14,25 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 339
+; NumberOfBuilds  = 363
 ; 
 ; Debugger
 ; -------------------------------------------------------
 ; CliArgs         = ""
 ; StackSize       = 8192
-; RuntimeDebug    = 0
+; RuntimeDebug    = 1
 ; DebugInfo       = 0
 ; CreateDbgFile   = 0
-; OverflowCheck   = 0
+; OverflowCheck   = 1
 ; AssemblerCheck  = 0
 ; InterruptCheck  = 1
 ; AutoRun         = 1
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 14
-; CursorColumn    = 48
-; LabelSearch     = ""
+; CursorLine      = 75
+; CursorColumn    = 23
+; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
 ; LabelPosition   = 0
@@ -75,6 +75,19 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
+; ******************************************
+; *   VANIA PLAYFIELD MANAGEMENT INCLUDE   *
+; ******************************************
+; * Contains Functions and Statements for  *
+; * - Setting up Display (bitmaps, slices) *
+; * - in-mem representation of levels      *
+; * - drawing the playfield                *
+; ******************************************
+XINCLUDE "constants.ab3"
+XINCLUDE "types.ab3"
+
+
+
 #DISP_TOP = 44
 #DISP_FIRST_HEIGHT = 30
 
@@ -83,19 +96,132 @@
 #DISP_GAMESTAGE_TOP = #DISP_TOP + #DISP_FIRST_HEIGHT + 3
 #DISP_BOTTOM_TOP = #DISP_GAMESTAGE_TOP + #DISP_GAMESTAGE_HEIGHT + 3
 
-Statement InitDisplay{}
-  InitCopList 0,#DISP_TOP,#DISP_FIRST_HEIGHT,$10006,0,64,0
-  DisplayPalette 0,0
-  DisplayBitMap 0,#TOP_BITMAP
+#TILES = 10
+#XOFFSET = 295 - (#HALFTILE_W * #TILES )
+#YOFFSET = 5
 
-  InitCopList 1, #DISP_GAMESTAGE_TOP,#DISP_GAMESTAGE_HEIGHT ,$10006,0,64,0
-  DisplayPalette 1,0
-  DisplayBitMap 1,1
+SHARED bitm.w
+bitm = 0
 
-  InitCopList 2, #DISP_BOTTOM_TOP, #DISP_BOTTOM_HEIGHT ,$10006,0,64,0
-  DisplayPalette 2,0
-  DisplayBitMap 2,4
+; the level array will hold the shape-ids to blit for each tile on the visible room
+Dim level.w (#TILES,#TILES)
 
-  CreateDisplay 0,1,2
+
+; we use a lookup table for isometric coordinates, as that prevents us from calculating over
+; and over and over and over again (anything that gets projected as part of double-buffering is
+; based on that grid, so we better keep it somewhere
+
+Dim tileCoords.vec2 (#TILES, #TILES)
+
+Statement Display_PrecalcTileCoords{}
+SHARED tileCoords()
+For x = 0 To #TILES - 1
+  For z = 0 To #TILES  - 1
+    tileCoords(x,z)\x = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
+    tileCoords(x,z)\z = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
+  Next
+Next
 End Statement
+
+
+Statement Display_CreateBitmaps{}
+BitMap #TOP_BITMAP,320,44,6
+BitMap 1,320,200,6
+BitMap 2,320,200,6
+BitMap #LOWER_BITMAP,320,40,6
+End Statement
+
+Statement Display_DoubleBuffer{}
+  DisplayBitMap 1,bitm + 1
+  bitm = 1 - bitm
+  Use BitMap bitm + 1
+End Statement
+
+Statement Display_Debug{text.s}
+  BitMapOutput #LOWER_BITMAP
+  Locate 1,1
+  Print text
+End Statement
+
+Statement Display_LoadLevel{}
+  SHARED level()
+  Restore leveldata
+
+  For x = 0 To #TILES - 1
+    For z = 0 To #TILES - 1
+      Read level(x,z)
+    Next
+  Next
+
+.leveldata :
+  Data.w 0,0,0,3,0,3,0,0,0,0
+  Data.w 0,0,0,0,0,0,0,0,0,0
+  Data.w 0,0,0,0,0,0,0,0,0,0
+  Data.w 0,0,1,1,1,1,1,1,0,0
+  Data.w 0,0,1,1,1,1,1,1,0,0
+  Data.w 0,0,0,0,0,0,0,0,0,0
+  Data.w 0,0,0,1,1,1,0,0,0,3
+  Data.w 0,0,0,1,2,1,0,0,0,0
+  Data.w 0,0,0,1,1,1,0,0,0,3
+  Data.w 0,0,3,0,3,0,0,0,0,0
+
+End Statement
+
+Statement Display_InitLevel{}
+  SHARED level(), tileCoords()
+  Use BitMap  1
+  For x = 0 To #TILES - 1
+    For z = 0 To #TILES  - 1
+      If level (x,z) < 3
+        Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
+      Else
+        Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
+      EndIf
+     Next
+  Next
+  GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
+  Cls
+
+; blit the ground-tiles on both double-buffer bitmaps so we can
+; restore the background with BBlit/Unbuffer nicely
+  Use BitMap 1
+  Blit #RENDERED_LEVEL_SHAPE,0,0
+  Use BitMap 2
+  Blit #RENDERED_LEVEL_SHAPE,0,0
+End Statement
+
+Function.q Display_GetTileCoordsX{x,z}
+  SHARED tileCoords()
+  Function Return tileCoords(x,z)\x
+End Function
+
+Function.q Display_GetTileCoordsZ{x,z}
+  SHARED tileCoords()
+  Function Return tileCoords(x,z)\z
+End Function
+
+Function.w CanMoveTo{posx, posy}
+; determine whether the character can move to the coordinates passed
+; we obviously can't walk over water/acid/lava or through brickwalls
+  SHARED level()
+  canmove.w = -1
+  ; make sure to not cross the playfield
+  If posx < 0 OR posx > #TILES - 1
+    canmove = 0
+  EndIf
+
+  If posy < 0 OR posy > #TILES - 1
+   canmove = 0
+  EndIf
+
+  ; make sure the target position isn't taken by something we can't pass
+  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H
+    canmove = 0
+  EndIf
+
+  Function Return canmove
+End Function
+
+
+
 

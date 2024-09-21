@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 332
+; NumberOfBuilds  = 354
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -31,8 +31,8 @@
 ; Editor
 ; -------------------------------------------------------
 ; CursorLine      = 15
-; CursorColumn    = 20
-; LabelSearch     = "inv"
+; CursorColumn    = 1
+; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
 ; LabelPosition   = 0
@@ -75,25 +75,18 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
+; ******************************************
+; *   VANIA PLAYFIELD MANAGEMENT INCLUDE   *
+; ******************************************
+; * Contains Functions and Statements for  *
+; * - Setting up Display (bitmaps, slices) *
+; * - in-mem representation of levels      *
+; * - drawing the playfield                *
+; ******************************************
 
-; couple types for handling state easier
-NEWTYPE .vec2
-  z.q
-  x.q
-End NEWTYPE
+Statement InitBitmaps{}
+End Statement
 
-NEWTYPE.inventory
-  shapeId.w
-  name.s
-End NEWTYPE
+Statement SetupDisplay{}
+End Statement
 
-NEWTYPE.item
-  pos.vec2
-  details.inventory
-End NEWTYPE
-
-NEWTYPE .character
-  matrixpos.vec2
-  realpos.vec2
-  dir.vec2
-End NEWTYPE
