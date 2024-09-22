@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 21
-; CursorColumn    = 49
+; CursorLine      = 18
+; CursorColumn    = 18
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -78,21 +78,21 @@
 ; CONSTANTS FOR PLAYFIELD MATH
 ; ----------------------------
 
-;We draw the tiles closer to one another, so the planes look better
-#HALFTILE_W = 15
-#HALFTILE_H = 8
-
-#TILE_WIDTH = 30
-#TILE_HEIGHT = 23
-#OFFSETX = 203
-#OFFSETY = 6
-
-;#TILES = 10
+#TILES = 9
 ;#XOFFSET = 295 - (#HALFTILE_W * #TILES )
 ;#YOFFSET = 5
 
+#TILE_WIDTH = 32
+#TILE_HEIGHT = 24
+#OFFSETX = 203
+#OFFSETY = 6
+
+;We draw the tiles closer to one another, so the planes look better
+#HALFTILE_W = 16
+#HALFTILE_H = 8
+
 #CHAR_WIDTH = 26
-#CHAR_HEIGHT = 17
+#CHAR_HEIGHT = 21
 
 
 #FONT_HEIGHT = 5

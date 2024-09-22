@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 10
-; CursorColumn    = 1
+; CursorLine      = 12
+; CursorColumn    = 17
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -85,10 +85,12 @@
 ; ******************************************
 XINCLUDE "constants.ab3"
 
+
 Statement Shapes_SetupShapeSheet{}
   BitMap #SHAPE_SHEET_BITMAP,320,200,6
   LoadBitMap #SHAPE_SHEET_BITMAP,"amiga:funkdungeon/vania_shapes.pic",0
 End Statement
+
 
 Statement Shapes_CutShapes{}
   ; we take all the shapes we need from a shape-sheet style bitmap

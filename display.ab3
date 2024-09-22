@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 75
-; CursorColumn    = 23
+; CursorLine      = 87
+; CursorColumn    = 27
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -96,7 +96,6 @@ XINCLUDE "types.ab3"
 #DISP_GAMESTAGE_TOP = #DISP_TOP + #DISP_FIRST_HEIGHT + 3
 #DISP_BOTTOM_TOP = #DISP_GAMESTAGE_TOP + #DISP_GAMESTAGE_HEIGHT + 3
 
-#TILES = 10
 #XOFFSET = 295 - (#HALFTILE_W * #TILES )
 #YOFFSET = 5
 
@@ -154,17 +153,15 @@ Statement Display_LoadLevel{}
   Next
 
 .leveldata :
-  Data.w 0,0,0,3,0,3,0,0,0,0
-  Data.w 0,0,0,0,0,0,0,0,0,0
-  Data.w 0,0,0,0,0,0,0,0,0,0
-  Data.w 0,0,1,1,1,1,1,1,0,0
-  Data.w 0,0,1,1,1,1,1,1,0,0
-  Data.w 0,0,0,0,0,0,0,0,0,0
-  Data.w 0,0,0,1,1,1,0,0,0,3
-  Data.w 0,0,0,1,2,1,0,0,0,0
-  Data.w 0,0,0,1,1,1,0,0,0,3
-  Data.w 0,0,3,0,3,0,0,0,0,0
-
+  Data.w 0,0,0,0,0,0,0,0,0
+  Data.w 0,0,0,0,0,0,0,0,0
+  Data.w 0,0,0,0,0,0,0,0,0
+  Data.w 0,1,1,1,1,1,1,0,0
+  Data.w 0,1,1,1,1,1,1,0,0
+  Data.w 0,0,0,0,0,0,0,0,0
+  Data.w 0,0,1,1,1,0,0,0,0
+  Data.w 0,0,1,2,1,0,0,0,0
+  Data.w 0,0,1,1,1,0,0,0,0
 End Statement
 
 Statement Display_InitLevel{}
@@ -204,22 +201,21 @@ Function.w CanMoveTo{posx, posy}
 ; determine whether the character can move to the coordinates passed
 ; we obviously can't walk over water/acid/lava or through brickwalls
   SHARED level()
-  canmove.w = -1
   ; make sure to not cross the playfield
-  If posx < 0 OR posx > #TILES - 1
-    canmove = 0
+  If posx < = 0 OR posx > #TILES - 1
+    Function Return 0
   EndIf
 
-  If posy < 0 OR posy > #TILES - 1
-   canmove = 0
+  If posy < = 0 OR posy > #TILES - 1
+    Function Return 0
   EndIf
 
   ; make sure the target position isn't taken by something we can't pass
   If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H
-    canmove = 0
+    Function Return 0
   EndIf
 
-  Function Return canmove
+  Function Return - 1
 End Function
 
 

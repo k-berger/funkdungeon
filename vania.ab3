@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 391
+; NumberOfBuilds  = 394
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 97
-; CursorColumn    = 77
+; CursorLine      = 1
+; CursorColumn    = 1
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -114,9 +114,9 @@ For i = 0 To 4
 Next
 
 Use BitMap #LOWER_BITMAP
-ando.character\realpos\x = Display_GetTileCoordsX{4,2}
-ando.character\realpos\z = Display_GetTileCoordsZ{4,2}
-ando.character\matrixpos\x = 4
+ando.character\realpos\x = Display_GetTileCoordsX{2,2}
+ando.character\realpos\z = Display_GetTileCoordsZ{2,2}
+ando.character\matrixpos\x = 2
 ando.character\matrixpos\z = 2
 
 BlitzKeys On
