@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 354
+; NumberOfBuilds  = 355
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 12
-; CursorColumn    = 17
+; CursorLine      = 26
+; CursorColumn    = 5
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -99,6 +99,8 @@ Statement Shapes_CutShapes{}
   ;Cutting tiles here. This should be refactored in to a statement and probably rethought...
   For y = 0 To 2
     GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
+    MidHandle y
+
   Next
 
   ; cutting "high" tiles here (doors, walls, etc.)
@@ -110,6 +112,7 @@ Statement Shapes_CutShapes{}
     GetaShape #FONT_SHAPE_INDEX + n,26 + (n * #FONT_WIDTH) + n,103, #FONT_WIDTH, #FONT_HEIGHT
   Next
   GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
+  MidHandle #CHAR_SHAPE_MIN
 
   ; cutting inventory and other status shapes
   GetaShape #INV_FRAME_INDEX, 28,61,15,15

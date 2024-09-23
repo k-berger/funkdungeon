@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 1
-; CursorColumn    = 1
+; CursorLine      = 26
+; CursorColumn    = 50
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -100,7 +100,7 @@ Statement Display_DrawCharacter {posx, posy, bitm}
 ; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
 ; to avoid another stack level
   ; SHARED tileCoords()
-  BBlit bitm, #CHAR_SHAPE_MIN, posx, posy - (#CHAR_HEIGHT) / 2
+  BBlit bitm, #CHAR_SHAPE_MIN, posx + 4 ,posy - 1  - (#CHAR_HEIGHT) / 2
 End Statement
 
 Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
@@ -117,6 +117,7 @@ Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
     For x = 0 To #TILES  - 1
       If x = posx AND z = posy
         Display_DrawCharacter{rposx,rposy, bitm}
+        ;Circlef rposx,rposy,3,3,16
       EndIf
       If level (x,z) > = 3
         BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z - 2 - #TILE_HEIGHT

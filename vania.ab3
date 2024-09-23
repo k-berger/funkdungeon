@@ -14,15 +14,15 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 394
+; NumberOfBuilds  = 409
 ; 
 ; Debugger
 ; -------------------------------------------------------
 ; CliArgs         = ""
 ; StackSize       = 8192
-; RuntimeDebug    = 1
+; RuntimeDebug    = 0
 ; DebugInfo       = 0
-; CreateDbgFile   = 0
+; CreateDbgFile   = 1
 ; OverflowCheck   = 1
 ; AssemblerCheck  = 0
 ; InterruptCheck  = 1
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 1
-; CursorColumn    = 1
+; CursorLine      = 60
+; CursorColumn    = 25
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1

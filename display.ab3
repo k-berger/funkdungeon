@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 363
+; NumberOfBuilds  = 366
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 87
-; CursorColumn    = 27
+; CursorLine      = 141
+; CursorColumn    = 13
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -97,7 +97,7 @@ XINCLUDE "types.ab3"
 #DISP_BOTTOM_TOP = #DISP_GAMESTAGE_TOP + #DISP_GAMESTAGE_HEIGHT + 3
 
 #XOFFSET = 295 - (#HALFTILE_W * #TILES )
-#YOFFSET = 5
+#YOFFSET = 15
 
 SHARED bitm.w
 bitm = 0
@@ -125,8 +125,8 @@ End Statement
 
 Statement Display_CreateBitmaps{}
 BitMap #TOP_BITMAP,320,44,6
-BitMap 1,320,200,6
-BitMap 2,320,200,6
+BitMap 1,360,220,6
+BitMap 2,360,220,6
 BitMap #LOWER_BITMAP,320,40,6
 End Statement
 
@@ -169,11 +169,20 @@ Statement Display_InitLevel{}
   Use BitMap  1
   For x = 0 To #TILES - 1
     For z = 0 To #TILES  - 1
+    If tileCoords(x,z)\x > 0 AND tileCoords(x,z)\x < 320 AND tileCoords(x,z)\z > 0 AND tileCoords(x,z)\z < 220
+      Display_Debug{Str$(tileCoords(x,z)\x) + " / " + Str$(tileCoords(x,z)\z)}
+
       If level (x,z) < 3
+        Circle tileCoords(x,z)\x, tileCoords(x,z)\z,2,2,2
+
         Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
       Else
-        Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
+        ;Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
       EndIf
+    Else
+
+    EndIf
+
      Next
   Next
   GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
@@ -202,11 +211,11 @@ Function.w CanMoveTo{posx, posy}
 ; we obviously can't walk over water/acid/lava or through brickwalls
   SHARED level()
   ; make sure to not cross the playfield
-  If posx < = 0 OR posx > #TILES - 1
+  If posx < 0 OR posx > #TILES - 1
     Function Return 0
   EndIf
 
-  If posy < = 0 OR posy > #TILES - 1
+  If posy < 0 OR posy > #TILES - 1
     Function Return 0
   EndIf
 
