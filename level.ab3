@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 340
+; NumberOfBuilds  = 420
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -22,17 +22,17 @@
 ; StackSize       = 8192
 ; RuntimeDebug    = 0
 ; DebugInfo       = 0
-; CreateDbgFile   = 0
-; OverflowCheck   = 0
+; CreateDbgFile   = 1
+; OverflowCheck   = 1
 ; AssemblerCheck  = 0
 ; InterruptCheck  = 1
 ; AutoRun         = 1
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 34
-; CursorColumn    = 34
-; LabelSearch     = ""
+; CursorLine      = 35
+; CursorColumn    = 32
+; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
 ; LabelPosition   = 0
@@ -75,51 +75,45 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
-; CONSTANTS FOR PLAYFIELD MATH
-; ----------------------------
+; internal handling of the level
 
-#TILES = 9
-;#XOFFSET = 295 - (#HALFTILE_W * #TILES )
-;#YOFFSET = 5
+#WORLD_BITMAP = 5
 
-#TILE_WIDTH = 32
-#TILE_HEIGHT = 24
-#OFFSETX = 203
-#OFFSETY = 6
+#WORLDMAP_XOFFSET = 70
+#WORLDMAP_YOFFSET = 70
 
-;We draw the tiles closer to one another, so the planes look better
-#HALFTILE_W = 16
-#HALFTILE_H = 8
+worldTileX.w = #WORLDMAP_XOFFSET
+worldTileY.w = #WORLDMAP_YOFFSET
 
-#CHAR_WIDTH = 26
-#CHAR_HEIGHT = 22
+#LEVELTILE_W = 9
+#LEVELTILE_H = 9
 
-#FONT_HEIGHT = 5
-#FONT_WIDTH = 4
+Statement Level_PrepareWorld{}
+  BitMap #WORLD_BITMAP, 320,200,6
+  LoadBitMap #WORLD_BITMAP, "amiga:funkdungeon/vania_world.pic",1
+End Statement
 
-#TOP_BITMAP = 0
-#SHAPE_SHEET_BITMAP = 3
-#LOWER_BITMAP = 4
-
-#SHAPE_COLUMN = 3
-#SHAPE_WALL_H = 4
-#SHAPE_WALL_W = 5
+Statement Level_LoadMap{}
+  SHARED level()
+  SHARED worldTileX, worldTileY
 
 
-; index of the first letter shape
-#FONT_SHAPE_INDEX = #SHAPE_WALL_W + 1
-#RENDERED_LEVEL_SHAPE = #FONT_SHAPE_INDEX + 26
-#RENDERED_LEVEL_SHAPE_HIGH = #RENDERED_LEVEL_SHAPE + 1
+  Use BitMap #WORLD_BITMAP
 
-; Inventory shapes (indices, positions on sheet, dimensions)
-#INV_FRAME_INDEX = #RENDERED_LEVEL_SHAPE_HIGH + 1
-#INV_SHAPES_MIN = #INV_FRAME_INDEX + 1
-#INV_SHAPES_NUM = 4
-#INV_SHAPES_MAX = #INV_FRAME_INDEX + #INV_SHAPES_NUM
-#INV_SHAPES_X = 28
-#INV_SHAPES_Y = 78
-#INV_SHAPES_W = 11
-#INV_SHAPES_H = 11
+  For y = 0 To #LEVELTILE_H - 1
+    For x = 0 To #LEVELTILE_W - 1
+      level(x,y) = Point (worldTileX + x, worldTileY + y) - 1
+    Next
+  Next
 
-#CHAR_SHAPE_MIN = #INV_SHAPES_MAX + 1
+End Statement
+
+Statement Level_MoveTo{x,y}
+  SHARED worldTileX, worldTileY
+
+  worldTileX = #WORLDMAP_XOFFSET + (x * #LEVELTILE_W)
+  worldTileY = #WORLDMAP_YOFFSET + (y * #LEVELTILE_H)
+  Level_LoadMap{}
+End Statement
+
 

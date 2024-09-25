@@ -14,13 +14,13 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 409
+; NumberOfBuilds  = 460
 ; 
 ; Debugger
 ; -------------------------------------------------------
 ; CliArgs         = ""
 ; StackSize       = 8192
-; RuntimeDebug    = 0
+; RuntimeDebug    = 1
 ; DebugInfo       = 0
 ; CreateDbgFile   = 1
 ; OverflowCheck   = 1
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 60
-; CursorColumn    = 25
+; CursorLine      = 132
+; CursorColumn    = 28
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -83,6 +83,8 @@ XINCLUDE "types.ab3"
 XINCLUDE "constants.ab3"
 XINCLUDE "shapes.ab3"
 XINCLUDE "display.ab3"
+XINCLUDE "level.ab3"
+
 
 NoCli
 
@@ -98,7 +100,11 @@ DrawText{1, "This is where it all begins"}
 DrawText{2, "It is unclear though what it is"}
 
 Display_PrecalcTileCoords{}
-Display_LoadLevel{}
+Level_PrepareWorld{}
+worldposX = 1
+worldposY = 0
+
+Level_MoveTo{worldposX,worldposY}
 Display_InitLevel{}
 
 BLITZ
@@ -170,12 +176,54 @@ Repeat
   lastkey = #KEY_NONE
  EndIf
 
- ando\realpos\x = Display_GetTileCoordsX{ando\matrixpos\x, ando\matrixpos\z}
- ando\realpos\z = Display_GetTileCoordsZ{ando\matrixpos\x, ando\matrixpos\z}
+  ;we are moving on to a new room
+  If ando\matrixpos\x < 0
+    ando\matrixpos\x = #TILES - 1
+    worldposX = worldposX - 1
+    Level_MoveTo{worldposX, worldposY}
+    Display_InitLevel{}
+    BLITZ
+    Goto continueRender
+  EndIf
+
+  If ando\matrixpos\x > = #TILES
+        ando\matrixpos\x = 0
+    worldposX = worldposX + 1
+    Level_MoveTo{worldposX, worldposY}
+    Display_InitLevel{}
+    BLITZ
+    Goto continueRender
+  EndIf
+
+  If ando\matrixpos\z < 0
+    ando\matrixpos\z = #TILES - 1
+    worldposY = worldposY - 1
+    Level_MoveTo{worldposX, worldposY}
+    Display_InitLevel{}
+    BLITZ
+    Goto continueRender
+  EndIf
+
+  If ando\matrixpos\z > = #TILES
+    ando\matrixpos\z = 0
+    worldposY = worldposY + 1
+    Level_MoveTo{worldposX, worldposY}
+    Display_InitLevel{}
+    BLITZ
+    Goto continueRender
+  EndIf
+
+.continueRender :
+  ando\realpos\x = Display_GetTileCoordsX{ando\matrixpos\x, ando\matrixpos\z}
+  ando\realpos\z = Display_GetTileCoordsZ{ando\matrixpos\x, ando\matrixpos\z}
+
  VWait
 
  Display_DoubleBuffer{}
  Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
-Until Joyb(0)
+ Display_Debug{Str$(worldposX) + "/" + Str$(worldposY) }
 
+Until Joyb(0)
+;Display_FreeAll{}
+AMIGA
 End

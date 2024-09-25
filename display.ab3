@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 366
+; NumberOfBuilds  = 370
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 141
-; CursorColumn    = 13
+; CursorLine      = 70
+; CursorColumn    = 6
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -97,7 +97,7 @@ XINCLUDE "types.ab3"
 #DISP_BOTTOM_TOP = #DISP_GAMESTAGE_TOP + #DISP_GAMESTAGE_HEIGHT + 3
 
 #XOFFSET = 295 - (#HALFTILE_W * #TILES )
-#YOFFSET = 15
+#YOFFSET = 40
 
 SHARED bitm.w
 bitm = 0
@@ -125,8 +125,8 @@ End Statement
 
 Statement Display_CreateBitmaps{}
 BitMap #TOP_BITMAP,320,44,6
-BitMap 1,360,220,6
-BitMap 2,360,220,6
+BitMap 1,360,240,6
+BitMap 2,360,240,6
 BitMap #LOWER_BITMAP,320,40,6
 End Statement
 
@@ -142,48 +142,21 @@ Statement Display_Debug{text.s}
   Print text
 End Statement
 
-Statement Display_LoadLevel{}
-  SHARED level()
-  Restore leveldata
-
-  For x = 0 To #TILES - 1
-    For z = 0 To #TILES - 1
-      Read level(x,z)
-    Next
-  Next
-
-.leveldata :
-  Data.w 0,0,0,0,0,0,0,0,0
-  Data.w 0,0,0,0,0,0,0,0,0
-  Data.w 0,0,0,0,0,0,0,0,0
-  Data.w 0,1,1,1,1,1,1,0,0
-  Data.w 0,1,1,1,1,1,1,0,0
-  Data.w 0,0,0,0,0,0,0,0,0
-  Data.w 0,0,1,1,1,0,0,0,0
-  Data.w 0,0,1,2,1,0,0,0,0
-  Data.w 0,0,1,1,1,0,0,0,0
-End Statement
-
 Statement Display_InitLevel{}
+QAMIGA
   SHARED level(), tileCoords()
   Use BitMap  1
+  Cls
   For x = 0 To #TILES - 1
     For z = 0 To #TILES  - 1
-    If tileCoords(x,z)\x > 0 AND tileCoords(x,z)\x < 320 AND tileCoords(x,z)\z > 0 AND tileCoords(x,z)\z < 220
-      Display_Debug{Str$(tileCoords(x,z)\x) + " / " + Str$(tileCoords(x,z)\z)}
-
-      If level (x,z) < 3
-        Circle tileCoords(x,z)\x, tileCoords(x,z)\z,2,2,2
-
-        Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
-      Else
-        ;Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
+      If tileCoords(x,z)\x > 0 AND tileCoords(x,z)\x < 320 AND tileCoords(x,z)\z > 0 AND tileCoords(x,z)\z < 220
+        If level (x,z)  < 3
+          Blit level(x,z), tileCoords(x,z)\x, tileCoords(x,z)\z
+        Else
+          Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
+        EndIf
       EndIf
-    Else
-
-    EndIf
-
-     Next
+    Next
   Next
   GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
   Cls
@@ -191,9 +164,14 @@ Statement Display_InitLevel{}
 ; blit the ground-tiles on both double-buffer bitmaps so we can
 ; restore the background with BBlit/Unbuffer nicely
   Use BitMap 1
+  Cls
   Blit #RENDERED_LEVEL_SHAPE,0,0
   Use BitMap 2
+  Cls
   Blit #RENDERED_LEVEL_SHAPE,0,0
+
+
+
 End Statement
 
 Function.q Display_GetTileCoordsX{x,z}
@@ -210,8 +188,33 @@ Function.w CanMoveTo{posx, posy}
 ; determine whether the character can move to the coordinates passed
 ; we obviously can't walk over water/acid/lava or through brickwalls
   SHARED level()
+  ; are we leaving the room?
+  If (posx < 0)
+    If level(posx + 1, posy) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
+  If (posx  = #TILES)
+    If level(posx - 1, posy) = 6
+     Function Return - 1
+    EndIf
+  EndIf
+
+  If (posy < 0)
+    If level(posx, posy + 1) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
+  If (posy = #TILES)
+    If level(posx, posy - 1 ) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
   ; make sure to not cross the playfield
-  If posx < 0 OR posx > #TILES - 1
+  If (posx < 0 OR posx > #TILES - 1)
     Function Return 0
   EndIf
 
@@ -227,6 +230,12 @@ Function.w CanMoveTo{posx, posy}
   Function Return - 1
 End Function
 
+Statement Display_FreeAll{}
+  Free BitMap #TOP_BITMAP
+  Free BitMap #LOWER_BITMAP
+  Free BitMap 1
+  Free BitMap 2
+End Statement
 
 
 

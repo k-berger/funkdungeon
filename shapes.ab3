@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 355
+; NumberOfBuilds  = 358
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 26
-; CursorColumn    = 5
+; CursorLine      = 39
+; CursorColumn    = 44
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -97,15 +97,23 @@ Statement Shapes_CutShapes{}
   Use BitMap #SHAPE_SHEET_BITMAP
 
   ;Cutting tiles here. This should be refactored in to a statement and probably rethought...
+
+  ; currently three types of tiles
   For y = 0 To 2
     GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
     MidHandle y
-
   Next
 
   ; cutting "high" tiles here (doors, walls, etc.)
-  For h = 0 To 1
-    GetaShape #SHAPE_COLUMN + h,141 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
+  ; 0 = column
+  ; 1 = wall frontal
+  ; 2 = wall side
+
+  For h = 0 To 2
+    GetaShape #SHAPE_COLUMN + h,104 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
+    ; the high shapes are double the height of normal tiles. In order to position them correctly, relative
+    ; to the normal shapes, we need to handle them in the middle of their "socket" (which is a tile or nothing)
+    Handle #SHAPE_COLUMN + h, #HALFTILE_W - 1, #TILE_HEIGHT * 2 - #HALFTILE_H - 2
   Next
 
   For n = 0 To 25
@@ -120,6 +128,8 @@ Statement Shapes_CutShapes{}
   For i = 0 To #INV_SHAPES_NUM - 1
     GetaShape #INV_SHAPES_MIN + i, #INV_SHAPES_X + (#INV_SHAPES_W * i) + i, #INV_SHAPES_Y, #INV_SHAPES_W, #INV_SHAPES_H
   Next
+  Free BitMap #SHAPE_SHEET_BITMAP
+
 End Statement
 
 Statement DrawText {row.w, text.s}

@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 26
-; CursorColumn    = 50
+; CursorLine      = 44
+; CursorColumn    = 10
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -117,10 +117,9 @@ Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
     For x = 0 To #TILES  - 1
       If x = posx AND z = posy
         Display_DrawCharacter{rposx,rposy, bitm}
-        ;Circlef rposx,rposy,3,3,16
       EndIf
       If level (x,z) > = 3
-        BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z - 2 - #TILE_HEIGHT
+        BBlit bitm, level(x,z), tileCoords(x,z)\x , tileCoords(x,z)\z
       EndIf
     Next
   Next
