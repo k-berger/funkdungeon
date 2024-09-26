@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 460
+; NumberOfBuilds  = 458
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 132
-; CursorColumn    = 28
+; CursorLine      = 78
+; CursorColumn    = 10
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -104,14 +104,14 @@ Level_PrepareWorld{}
 worldposX = 1
 worldposY = 0
 
+Buffer 0,48000
+Buffer 1,48000
 Level_MoveTo{worldposX,worldposY}
 Display_InitLevel{}
 
 BLITZ
 INCLUDE "display_blitz.ab3"
 
-Buffer 0,48000
-Buffer 1,48000
 Display_InitDisplay{}
 
 Use BitMap #TOP_BITMAP
@@ -142,34 +142,70 @@ BlitzKeys On
 lastkey = #KEY_NONE
 keyheld = False
 
+Statement MoveBetweenRooms{charposx, charposz, dwx, dwy}
+  SHARED ando, worldposX, worldposY
+
+  ando\matrixpos\z = charposz
+  ando\matrixpos\x = charposx
+  worldposY = worldposY + dwy
+  worldposX = worldposX + dwx
+
+  Level_MoveTo{worldposX, worldposY}
+  Display_InitLevel{}
+
+End Statement
+
+Statement CheckRoomBoundariesAndMove{}
+  SHARED ando, worldposX, worldposY
+  If ando\matrixpos\x < 0
+    MoveBetweenRooms{#TILES - 1, ando\matrixpos\z, - 1,0}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\x > = #TILES
+    MoveBetweenRooms{0, ando\matrixpos\z,1,0}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\z < 0
+    MoveBetweenRooms{ando\matrixpos\x, #TILES - 1,0, - 1}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\z > = #TILES
+    MoveBetweenRooms{ando\matrixpos\x, 0, 0, 1}
+    BLITZ
+    Statement Return
+  EndIf
+End Statement
+
 Repeat
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    If CanMoveTo{ando\matrixpos\x + 1 , ando\matrixpos\z}
      ando\matrixpos\x = ando\matrixpos\x + 1
    EndIf
    lastkey = #KEY_RIGHT
-   keyheld = True
  EndIf
  If RawStatus(#KEY_LEFT) = -1 AND lastkey <> #KEY_LEFT
    If CanMoveTo{ando\matrixpos\x - 1, ando\matrixpos\z}
     ando\matrixpos\x = ando\matrixpos\x - 1
    EndIf
    lastkey = #KEY_LEFT
-   keyheld = True
  EndIf
  If RawStatus(#KEY_UP) = -1   AND lastkey <> #KEY_UP
   If CanMoveTo{ando\matrixpos\x , ando\matrixpos\z - 1}
    ando\matrixpos\z = ando\matrixpos\z - 1
   EndIf
   lastkey = #KEY_UP
-  keyheld = True
  EndIf
  If RawStatus(#KEY_DOWN) = -1 AND lastkey <> #KEY_DOWN
    If CanMoveTo{ando\matrixpos\x, ando\matrixpos\z + 1}
     ando\matrixpos\z = ando\matrixpos\z + 1
    EndIf
    lastkey = #KEY_DOWN
-   keyheld = True
  EndIf
 
  If RawStatus(#KEY_UP) = 0 AND RawStatus(#KEY_DOWN) = 0 AND RawStatus(#KEY_RIGHT) = 0 AND RawStatus(#KEY_LEFT) = 0
@@ -177,53 +213,18 @@ Repeat
  EndIf
 
   ;we are moving on to a new room
-  If ando\matrixpos\x < 0
-    ando\matrixpos\x = #TILES - 1
-    worldposX = worldposX - 1
-    Level_MoveTo{worldposX, worldposY}
-    Display_InitLevel{}
-    BLITZ
-    Goto continueRender
-  EndIf
+  CheckRoomBoundariesAndMove{}
 
-  If ando\matrixpos\x > = #TILES
-        ando\matrixpos\x = 0
-    worldposX = worldposX + 1
-    Level_MoveTo{worldposX, worldposY}
-    Display_InitLevel{}
-    BLITZ
-    Goto continueRender
-  EndIf
-
-  If ando\matrixpos\z < 0
-    ando\matrixpos\z = #TILES - 1
-    worldposY = worldposY - 1
-    Level_MoveTo{worldposX, worldposY}
-    Display_InitLevel{}
-    BLITZ
-    Goto continueRender
-  EndIf
-
-  If ando\matrixpos\z > = #TILES
-    ando\matrixpos\z = 0
-    worldposY = worldposY + 1
-    Level_MoveTo{worldposX, worldposY}
-    Display_InitLevel{}
-    BLITZ
-    Goto continueRender
-  EndIf
-
-.continueRender :
   ando\realpos\x = Display_GetTileCoordsX{ando\matrixpos\x, ando\matrixpos\z}
   ando\realpos\z = Display_GetTileCoordsZ{ando\matrixpos\x, ando\matrixpos\z}
 
- VWait
+  VWait
 
- Display_DoubleBuffer{}
- Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
- Display_Debug{Str$(worldposX) + "/" + Str$(worldposY) }
+  Display_DoubleBuffer{}
+  Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
+  Display_Debug{Str$(worldposX) + "/" + Str$(worldposY) }
 
 Until Joyb(0)
 ;Display_FreeAll{}
-AMIGA
+QAMIGA
 End

@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 44
-; CursorColumn    = 10
+; CursorLine      = 18
+; CursorColumn    = 72
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -104,8 +104,8 @@ Statement Display_DrawCharacter {posx, posy, bitm}
 End Statement
 
 Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
-  ; arguments: x-position and y-position of character
-  ;            bitmap to draw on(
+  ; arguments: x-position and y-position of character (real and matrix)
+  ;            bitmap to draw on
   ; drawing the level consists of
   ;  - drawing floor-tiles (immutable, pre-rendered per room in InitLevel)
   ;  - drawing high tiles (walls, doorways, ...)

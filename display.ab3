@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 70
-; CursorColumn    = 6
+; CursorLine      = 75
+; CursorColumn    = 3
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -147,6 +147,9 @@ QAMIGA
   SHARED level(), tileCoords()
   Use BitMap  1
   Cls
+  UnBuffer 0
+  UnBuffer 1
+
   For x = 0 To #TILES - 1
     For z = 0 To #TILES  - 1
       If tileCoords(x,z)\x > 0 AND tileCoords(x,z)\x < 320 AND tileCoords(x,z)\z > 0 AND tileCoords(x,z)\z < 220
@@ -169,9 +172,6 @@ QAMIGA
   Use BitMap 2
   Cls
   Blit #RENDERED_LEVEL_SHAPE,0,0
-
-
-
 End Statement
 
 Function.q Display_GetTileCoordsX{x,z}
