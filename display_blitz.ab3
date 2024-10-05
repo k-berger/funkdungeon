@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 357
+; NumberOfBuilds  = 358
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 63
-; CursorColumn    = 2
+; CursorLine      = 61
+; CursorColumn    = 1
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -94,6 +94,8 @@ Statement Display_InitDisplay{}
   DisplayBitMap 2,4
 
   CreateDisplay 0,1,2
+
+
 End Statement
 
 Statement Display_DrawCharacter {posx, posy, bitm}
@@ -136,5 +138,6 @@ Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
       EndIf
     Next
   Next
+  BBlit bitm, #MOUSE_SHAPE_INDEX, MouseX, MouseY
   Display_DrawItems{bitm}
 End Statement

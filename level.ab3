@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 98
-; CursorColumn    = 8
+; CursorLine      = 130
+; CursorColumn    = 55
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -201,3 +201,16 @@ Statement Level_CheckRoomBoundariesAndMove{}
     Statement Return
   EndIf
 End Statement
+
+
+Statement HighlightTile{x.w, y.w}
+  ; We need the tiles coordinates array here to search
+  SHARED tileCoords()
+
+  ;try to find the tile that is drawn on the coordinates
+End Statement
+
+
+
+
+

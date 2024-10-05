@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 15
-; CursorColumn    = 54
+; CursorLine      = 30
+; CursorColumn    = 87
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -102,9 +102,9 @@ Statement Shapes_CutShapes{}
   ; currently three types of tiles
   For y = 0 To 2
     GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
-    MidHandle y
+;    MidHandle y
   Next
-
+  GetaShape 70, #OFFSETX, #OFFSETY + (3 * #TILE_HEIGHT) + y, #TILE_WIDTH, #TILE_HEIGHT
   ; cutting "high" tiles here (doors, walls, etc.)
   ; 0 = column
   ; 1 = wall frontal
@@ -114,7 +114,7 @@ Statement Shapes_CutShapes{}
     GetaShape #SHAPE_COLUMN + h,104 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
     ; the high shapes are double the height of normal tiles. In order to position them correctly, relative
     ; to the normal shapes, we need to handle them in the middle of their "socket" (which is a tile or nothing)
-    Handle #SHAPE_COLUMN + h, #HALFTILE_W - 1, #TILE_HEIGHT * 2 - #HALFTILE_H - 2
+    ;Handle #SHAPE_COLUMN + h, #HALFTILE_W - 1, #TILE_HEIGHT * 2 - #HALFTILE_H - 2
   Next
 
   For n = 0 To 25
@@ -131,7 +131,10 @@ Statement Shapes_CutShapes{}
     MidHandle #INV_SHAPES_MIN + i
 
   Next
-  Free BitMap #SHAPE_SHEET_BITMAP
+
+GetaShape #MOUSE_SHAPE_INDEX, 54,60,8,8
+
+Free BitMap #SHAPE_SHEET_BITMAP
 
 End Statement
 

@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 497
+; NumberOfBuilds  = 526
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 49
-; CursorColumn    = 17
+; CursorLine      = 105
+; CursorColumn    = 1
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -87,8 +87,6 @@ XINCLUDE "shapes.ab3"
 XINCLUDE "display.ab3"
 XINCLUDE "level.ab3"
 
-
-
 NoCli
 
 Shapes_SetupShapeSheet{}
@@ -112,8 +110,11 @@ Buffer 1,48000
 Level_MoveTo{worldposX,worldposY}
 Display_InitLevel{}
 
+Format("000")
+
 BLITZ
 INCLUDE "display_blitz.ab3"
+
 
 Display_InitDisplay{}
 
@@ -129,6 +130,7 @@ ando\matrixpos\x = 2
 ando\matrixpos\z = 2
 
 BlitzKeys On
+Mouse On
 
 
 ; DA GAME LOOP
@@ -199,7 +201,20 @@ EndIf
   Display_DoubleBuffer{}
   Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
 
-  Display_Debug{Str$(worldposX) + "/" + Str$(worldposY) }
+  basicX = (MouseX - 151)
+  basicY = (MouseY - 40)
+
+tileXIndex = Int(( basicY / (#TILE_HEIGHT - 8)) + (basicX / #TILE_WIDTH))
+tileYIndex = Int(( - basicX / #TILE_WIDTH) + (basicY / (#TILE_HEIGHT - 8)))
+If tileXIndex > =0 AND tileXIndex < =#TILES AND tileYIndex > =0 AND tileYIndex < =#TILES
+BBlit bitm, 70, Display_GetTileCoordsX{tileXIndex, tileYIndex}, Display_GetTileCoordsZ{tileXIndex, tileYIndex}
+EndIf
+
+Line 0,0,300,0,6
+Line 0,200,300,200,6
+
+
+Display_Debug{Str$(tileXIndex) + "/" + Str$(tileYIndex) }
 
 Until Joyb(0)
 ;Display_FreeAll{}

@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 130
-; CursorColumn    = 20
+; CursorLine      = 92
+; CursorColumn    = 14
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -165,7 +165,8 @@ QAMIGA
           Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
         EndIf
       EndIf
-    Next
+            ;Box tileCoords(x,z)\x, tileCoords(x,z)\z, tileCoords(x,z)\x + #TILE_WIDTH, tileCoords(x,z)\z + #TILE_HEIGHT,5
+        Next
   Next
   GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
   Cls

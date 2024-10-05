@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 5
-; CursorColumn    = 1
+; CursorLine      = 50
+; CursorColumn    = 37
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -122,6 +122,7 @@ XINCLUDE "dir.ab3"
 #INV_SHAPES_Y = 78
 #INV_SHAPES_W = 11
 #INV_SHAPES_H = 11
+#MOUSE_SHAPE_INDEX = #INV_SHAPES_MAX + 1
 
-#CHAR_SHAPE_MIN = #INV_SHAPES_MAX + 1
+#CHAR_SHAPE_MIN = #MOUSE_SHAPE_INDEX + 1
 
