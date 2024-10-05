@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 496
+; NumberOfBuilds  = 497
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 58
-; CursorColumn    = 32
+; CursorLine      = 49
+; CursorColumn    = 17
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
