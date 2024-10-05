@@ -30,7 +30,7 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 105
+; CursorLine      = 107
 ; CursorColumn    = 1
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0

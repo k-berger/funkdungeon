@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 30
-; CursorColumn    = 87
+; CursorLine      = 58
+; CursorColumn    = 35
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -132,7 +132,7 @@ Statement Shapes_CutShapes{}
 
   Next
 
-GetaShape #MOUSE_SHAPE_INDEX, 54,60,8,8
+GetaShape #MOUSE_SHAPE_INDEX, 58,50,5,7
 
 Free BitMap #SHAPE_SHEET_BITMAP
 
