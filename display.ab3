@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 370
+; NumberOfBuilds  = 371
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 75
-; CursorColumn    = 3
+; CursorLine      = 130
+; CursorColumn    = 20
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -144,11 +144,17 @@ End Statement
 
 Statement Display_InitLevel{}
 QAMIGA
-  SHARED level(), tileCoords()
-  Use BitMap  1
-  Cls
+  SHARED level(), tileCoords(), bitm
+
   UnBuffer 0
   UnBuffer 1
+
+  Use BitMap  1
+  Cls
+  Use BitMap  2
+  Cls
+
+  Use BitMap bitm + 1
 
   For x = 0 To #TILES - 1
     For z = 0 To #TILES  - 1
@@ -184,52 +190,6 @@ Function.q Display_GetTileCoordsZ{x,z}
   Function Return tileCoords(x,z)\z
 End Function
 
-Function.w CanMoveTo{posx, posy}
-; determine whether the character can move to the coordinates passed
-; we obviously can't walk over water/acid/lava or through brickwalls
-  SHARED level()
-  ; are we leaving the room?
-  If (posx < 0)
-    If level(posx + 1, posy) = 6
-      Function Return - 1
-    EndIf
-  EndIf
-
-  If (posx  = #TILES)
-    If level(posx - 1, posy) = 6
-     Function Return - 1
-    EndIf
-  EndIf
-
-  If (posy < 0)
-    If level(posx, posy + 1) = 6
-      Function Return - 1
-    EndIf
-  EndIf
-
-  If (posy = #TILES)
-    If level(posx, posy - 1 ) = 6
-      Function Return - 1
-    EndIf
-  EndIf
-
-  ; make sure to not cross the playfield
-  If (posx < 0 OR posx > #TILES - 1)
-    Function Return 0
-  EndIf
-
-  If posy < 0 OR posy > #TILES - 1
-    Function Return 0
-  EndIf
-
-  ; make sure the target position isn't taken by something we can't pass
-  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H
-    Function Return 0
-  EndIf
-
-  Function Return - 1
-End Function
-
 Statement Display_FreeAll{}
   Free BitMap #TOP_BITMAP
   Free BitMap #LOWER_BITMAP
@@ -237,5 +197,14 @@ Statement Display_FreeAll{}
   Free BitMap 2
 End Statement
 
+Function.w Display_GetDirectionX{cx,cz,nx,nz}
+  x.w = (Display_GetTileCoordsX{ nx,nz} - Display_GetTileCoordsX{cx, cz}) / 8
+  Function Return x
+End Function
+
+Function.w Display_GetDirectionZ{cx,cz,nx,nz}
+  z.w = (Display_GetTileCoordsZ{nx,nz}  - Display_GetTileCoordsZ{cx,cz}) / 8
+  Function Return z
+End Function
 
 

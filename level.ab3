@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 420
+; NumberOfBuilds  = 421
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 35
-; CursorColumn    = 32
+; CursorLine      = 98
+; CursorColumn    = 8
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -76,7 +76,7 @@
 ; Max XBSound     = 10
 ; /XTRA
 ; internal handling of the level
-
+XINCLUDE "types.ab3"
 #WORLD_BITMAP = 5
 
 #WORLDMAP_XOFFSET = 70
@@ -108,6 +108,51 @@ Statement Level_LoadMap{}
 
 End Statement
 
+Function.w Level_CanMoveTo{posx, posy}
+; determine whether the character can move to the coordinates passed
+; we obviously can't walk over water/acid/lava or through brickwalls
+  SHARED level()
+  ; are we leaving the room?
+  If (posx < 0)
+    If level(posx + 1, posy) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
+  If (posx  = #TILES)
+    If level(posx - 1, posy) = 6
+     Function Return - 1
+    EndIf
+  EndIf
+
+  If (posy < 0)
+    If level(posx, posy + 1) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
+  If (posy = #TILES)
+    If level(posx, posy - 1 ) = 6
+      Function Return - 1
+    EndIf
+  EndIf
+
+  ; make sure to not cross the playfield
+  If (posx < 0 OR posx > #TILES - 1)
+    Function Return 0
+  EndIf
+
+  If posy < 0 OR posy > #TILES - 1
+    Function Return 0
+  EndIf
+
+  ; make sure the target position isn't taken by something we can't pass
+  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H OR level(posx,posy) = #SHAPE_WALL_W
+    Function Return 0
+  EndIf
+
+  Function Return - 1
+End Function
 Statement Level_MoveTo{x,y}
   SHARED worldTileX, worldTileY
 
@@ -116,4 +161,43 @@ Statement Level_MoveTo{x,y}
   Level_LoadMap{}
 End Statement
 
+Statement Level_MoveBetweenRooms{charposx, charposz, dwx, dwy}
+  SHARED ando, worldposX, worldposY
+  BLITZ
 
+  ando\matrixpos\z = charposz
+  ando\matrixpos\x = charposx
+  worldposY = worldposY + dwy
+  worldposX = worldposX + dwx
+
+  Level_MoveTo{worldposX, worldposY}
+  Display_InitLevel{}
+
+End Statement
+
+Statement Level_CheckRoomBoundariesAndMove{}
+  SHARED ando, worldposX, worldposY
+  If ando\matrixpos\x < 0
+    Level_MoveBetweenRooms{#TILES - 1, ando\matrixpos\z, - 1,0}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\x > = #TILES
+    Level_MoveBetweenRooms{0, ando\matrixpos\z,1,0}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\z < 0
+    Level_MoveBetweenRooms{ando\matrixpos\x, #TILES - 1,0, - 1}
+    BLITZ
+    Statement Return
+  EndIf
+
+  If ando\matrixpos\z > = #TILES
+    Level_MoveBetweenRooms{ando\matrixpos\x, 0, 0, 1}
+    BLITZ
+    Statement Return
+  EndIf
+End Statement

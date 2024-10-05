@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 15
-; CursorColumn    = 20
+; CursorLine      = 28
+; CursorColumn    = 10
 ; LabelSearch     = "inv"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -96,4 +96,14 @@ NEWTYPE .character
   matrixpos.vec2
   realpos.vec2
   dir.vec2
+  energy.w
+  strength.w
+  items.inventory[5]
+  actions
 End NEWTYPE
+
+NEWTYPE .action
+  duration.w
+  name.s
+End NEWTYPE
+

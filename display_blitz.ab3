@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 354
+; NumberOfBuilds  = 357
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 18
-; CursorColumn    = 72
+; CursorLine      = 63
+; CursorColumn    = 2
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -103,6 +103,19 @@ Statement Display_DrawCharacter {posx, posy, bitm}
   BBlit bitm, #CHAR_SHAPE_MIN, posx + 4 ,posy - 1  - (#CHAR_HEIGHT) / 2
 End Statement
 
+Statement Display_DrawItems {bitm}
+SHARED tileCoords()
+; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
+; to avoid another stack level
+  ; SHARED tileCoords()
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(1,6)\x, tileCoords(1,6)\z - 4
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(2,6)\x, tileCoords(2,6)\z  - 4
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(3,6)\x, tileCoords(3,6)\z  - 4
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(4,6)\x, tileCoords(4,6)\z  - 4
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(5,6)\x, tileCoords(5,6)\z  - 4
+;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(6,6)\x, tileCoords(6,6)\z  - 4
+End Statement
+
 Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
   ; arguments: x-position and y-position of character (real and matrix)
   ;            bitmap to draw on
@@ -123,4 +136,5 @@ Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
       EndIf
     Next
   Next
+  Display_DrawItems{bitm}
 End Statement

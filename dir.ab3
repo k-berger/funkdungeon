@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 5
-; CursorColumn    = 1
+; CursorLine      = 1
+; CursorColumn    = 10
 ; LabelSearch     = ""
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -75,53 +75,5 @@
 ; Max Stencil     = 5
 ; Max XBSound     = 10
 ; /XTRA
-; CONSTANTS FOR PLAYFIELD MATH
-; ----------------------------
-
-XINCLUDE "dir.ab3"
-
-#TILES = 9
-;#XOFFSET = 295 - (#HALFTILE_W * #TILES )
-;#YOFFSET = 5
-
-#TILE_WIDTH = 32
-#TILE_HEIGHT = 24
-#OFFSETX = 203
-#OFFSETY = 6
-
-;We draw the tiles closer to one another, so the planes look better
-#HALFTILE_W = 16
-#HALFTILE_H = 8
-
-#CHAR_WIDTH = 26
-#CHAR_HEIGHT = 22
-
-#FONT_HEIGHT = 5
-#FONT_WIDTH = 4
-
-#TOP_BITMAP = 0
-#SHAPE_SHEET_BITMAP = 3
-#LOWER_BITMAP = 4
-
-#SHAPE_COLUMN = 3
-#SHAPE_WALL_H = 4
-#SHAPE_WALL_W = 5
-
-
-; index of the first letter shape
-#FONT_SHAPE_INDEX = #SHAPE_WALL_W + 1
-#RENDERED_LEVEL_SHAPE = #FONT_SHAPE_INDEX + 26
-#RENDERED_LEVEL_SHAPE_HIGH = #RENDERED_LEVEL_SHAPE + 1
-
-; Inventory shapes (indices, positions on sheet, dimensions)
-#INV_FRAME_INDEX = #RENDERED_LEVEL_SHAPE_HIGH + 1
-#INV_SHAPES_MIN = #INV_FRAME_INDEX + 1
-#INV_SHAPES_NUM = 4
-#INV_SHAPES_MAX = #INV_FRAME_INDEX + #INV_SHAPES_NUM
-#INV_SHAPES_X = 28
-#INV_SHAPES_Y = 78
-#INV_SHAPES_W = 11
-#INV_SHAPES_H = 11
-
-#CHAR_SHAPE_MIN = #INV_SHAPES_MAX + 1
+RootDir.s = "amiga:funkdungeon/"
 
