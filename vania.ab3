@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 535
+; NumberOfBuilds  = 540
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 54
-; CursorColumn    = 1
+; CursorLine      = 122
+; CursorColumn    = 29
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -79,16 +79,23 @@
 WBStartup
 AMIGA
 
+; basic type definition for what we need, but.... I think this can be contextualized
+; and doesn" have to be all in the same include...
 XINCLUDE "types.ab3"
+
 DEFTYPE .character ando
 
+; include a couple of things we need. Layout is still bonkers
+; (remove this constants-file, it makes things overly complicated and kittens might die from reading it)
 XINCLUDE "constants.ab3"
 XINCLUDE "shapes.ab3"
 XINCLUDE "display.ab3"
 XINCLUDE "level.ab3"
+XINCLUDE "dykstra.ab3"
 
 NoCli
 
+; setup for graphics (shapes and bitmaps)
 Shapes_SetupShapeSheet{}
 Shapes_CutShapes{}
 Display_CreateBitmaps{}
@@ -100,6 +107,7 @@ inventoryList(0)\name = "Golden Key"
 DrawText{1, "This is where it all begins"}
 DrawText{2, "It is unclear though what it is"}
 
+;setup the world
 Display_PrecalcTileCoords{}
 Level_PrepareWorld{}
 worldposX = 1
@@ -107,17 +115,21 @@ worldposY = 0
 
 Buffer 0,48000
 Buffer 1,48000
+
+;setup the current room and initialize the static parts
 Level_MoveTo{worldposX,worldposY}
 Display_InitLevel{}
 
 Format("000")
 
+; bye-bye OS...
 BLITZ
 INCLUDE "display_blitz.ab3"
 
-
+; setup the display for the game
 Display_InitDisplay{}
 
+; TODO: move this out of here
 Use BitMap #TOP_BITMAP
 For i = 0 To 4
   Blit #INV_FRAME_INDEX, 5 + (16 * i),5
@@ -129,6 +141,7 @@ ando\realpos\z = Display_GetTileCoordsZ{2,2}
 ando\matrixpos\x = 2
 ando\matrixpos\z = 2
 
+;inputs
 BlitzKeys On
 Mouse On
 
@@ -150,7 +163,7 @@ moving = False
 moves = 0
 
 Repeat
-
+ ;ODO: move this somewhere else and DR
  If RawStatus(#KEY_RIGHT) = -1 AND lastkey <> #KEY_RIGHT
    If Level_CanMoveTo{ando\matrixpos\x + 1 , ando\matrixpos\z}
      ando\matrixpos\x = ando\matrixpos\x + 1
@@ -189,10 +202,6 @@ Repeat
   ;we are moving on to a new room
   Level_CheckRoomBoundariesAndMove{}
 
-If moving = True
-
-EndIf
-
   ando\realpos\x = Display_GetTileCoordsX{ando\matrixpos\x, ando\matrixpos\z}
   ando\realpos\z = Display_GetTileCoordsZ{ando\matrixpos\x, ando\matrixpos\z}
 
@@ -201,22 +210,26 @@ EndIf
   Display_DoubleBuffer{}
   Display_DrawLevel{ando\realpos\x,ando\realpos\z, ando\matrixpos\x, ando\matrixpos\z,bitm}
 
+  ;Figure out which tile the mouse is pointing at
+  ;TODO: move this out of here.
   basicX = (MouseX - 151)
   basicY = (MouseY - 40)
 
-tileXIndex = Int(( basicY / (#TILE_HEIGHT - 8)) + (basicX / #TILE_WIDTH))
-tileYIndex = Int(( - basicX / #TILE_WIDTH) + (basicY / (#TILE_HEIGHT - 8)))
-If tileXIndex > =0 AND tileXIndex < =#TILES AND tileYIndex > =0 AND tileYIndex < =#TILES
-BBlit bitm, 70, Display_GetTileCoordsX{tileXIndex, tileYIndex}, Display_GetTileCoordsZ{tileXIndex, tileYIndex}
-EndIf
+  tileXIndex = Int(( basicY / (#TILE_HEIGHT - 8)) + (basicX / #TILE_WIDTH))
+  tileYIndex = Int(( - basicX / #TILE_WIDTH) + (basicY / (#TILE_HEIGHT - 8)))
+  If tileXIndex > =0 AND tileXIndex < =#TILES AND tileYIndex > =0 AND tileYIndex < =#TILES
+    BBlit bitm, 70, Display_GetTileCoordsX{tileXIndex, tileYIndex}, Display_GetTileCoordsZ{tileXIndex, tileYIndex}
+    If Joyb(0) = 1
+      ando\matrixpos\x = tileXIndex + 1
+      ando\matrixpos\z = tileYIndex
+    EndIf
+  EndIf
 
-Line 0,0,300,0,6
-Line 0,200,300,200,6
+  Line 0,0,300,0,6
+  Line 0,200,300,200,6
 
+  Display_Debug{Str$(tileXIndex) + "/" + Str$(tileYIndex) }
 
-Display_Debug{Str$(tileXIndex) + "/" + Str$(tileYIndex) }
-
-Until Joyb(0)
-;Display_FreeAll{}
+Until Joyb(0) = 2
 QAMIGA
 End

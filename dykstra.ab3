@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 612
+; NumberOfBuilds  = 611
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 25
-; CursorColumn    = 49
+; CursorLine      = 10
+; CursorColumn    = 9
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -84,7 +84,6 @@ End NEWTYPE
 DEFTYPE .b currentPathLength
 
 Dim pathMap.b(#TILES, #TILES)
-Dim level.b(#TILES, #TILES)
 
 Statement SelectNextOnPath{cx,cy, * ptx.node}
   SHARED pathMap()
