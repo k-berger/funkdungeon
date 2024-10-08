@@ -3,8 +3,8 @@
 ; 
 ; General Info
 ; -------------------------------------------------------
-; ExePath         = "ram:"
-; ExeFile         = "Empty"
+; ExePath         = "amiga:funkdungeon"
+; ExeFile         = "vania"
 ; CreateIcon      = 0
 ; Residents       = "all.res"
 ; 
@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 526
+; NumberOfBuilds  = 535
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,7 +30,7 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 107
+; CursorLine      = 54
 ; CursorColumn    = 1
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0

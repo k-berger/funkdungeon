@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 361
+; NumberOfBuilds  = 363
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 58
-; CursorColumn    = 35
+; CursorLine      = 40
+; CursorColumn    = 31
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -89,7 +89,7 @@ XINCLUDE "constants.ab3"
 
 Statement Shapes_SetupShapeSheet{}
   BitMap #SHAPE_SHEET_BITMAP,320,200,6
-  LoadBitMap #SHAPE_SHEET_BITMAP, "amiga:funkdungeon/vania_shapes.pic",0
+  LoadBitMap #SHAPE_SHEET_BITMAP, "vania_shapes.pic",0
 End Statement
 
 
@@ -114,7 +114,7 @@ Statement Shapes_CutShapes{}
     GetaShape #SHAPE_COLUMN + h,104 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
     ; the high shapes are double the height of normal tiles. In order to position them correctly, relative
     ; to the normal shapes, we need to handle them in the middle of their "socket" (which is a tile or nothing)
-    ;Handle #SHAPE_COLUMN + h, #HALFTILE_W - 1, #TILE_HEIGHT * 2 - #HALFTILE_H - 2
+    Handle #SHAPE_COLUMN + h,#HALFTILE_W, #TILE_HEIGHT
   Next
 
   For n = 0 To 25

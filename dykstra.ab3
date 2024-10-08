@@ -1,0 +1,174 @@
+; XTRA
+; Embedded .xtra Header
+; 
+; General Info
+; -------------------------------------------------------
+; ExePath         = "amiga:funkdungeon"
+; ExeFile         = "vania"
+; CreateIcon      = 0
+; Residents       = "all.res"
+; 
+; Compiler
+; -------------------------------------------------------
+; StringBuffer    = 100000
+; MakeSmallest    = 1
+; FuncOptimize    = 1
+; Version         = 0.0.0
+; NumberOfBuilds  = 612
+; 
+; Debugger
+; -------------------------------------------------------
+; CliArgs         = ""
+; StackSize       = 8192
+; RuntimeDebug    = 1
+; DebugInfo       = 0
+; CreateDbgFile   = 1
+; OverflowCheck   = 1
+; AssemblerCheck  = 0
+; InterruptCheck  = 1
+; AutoRun         = 1
+; 
+; Editor
+; -------------------------------------------------------
+; CursorLine      = 25
+; CursorColumn    = 49
+; LabelSearch     = "shape_sh"
+; LabelRemark     = 0
+; LabelAll        = 1
+; LabelPosition   = 0
+; 
+; Blitz Objects
+; -------------------------------------------------------
+; Max File        = 100
+; Max GadgetList  = 100
+; Max Shape       = 200
+; Max Bank        = 1
+; Max MenuList    = 100
+; Max GTList      = 100
+; Max Palette     = 4
+; Max BitMap      = 10
+; Max Screen      = 5
+; Max IntuiFont   = 10
+; Max BlitzFont   = 1
+; Max Window      = 100
+; Max IconInfo    = 1
+; Max MUIObject   = 50
+; Max AsyncReq    = 4
+; Max Req-Lib     = 5
+; Max GTMenuList  = 100
+; Max Console     = 5
+; Max TCPSock     = 5
+; Max Tape        = 5
+; Max Sound       = 10
+; Max MedModule   = 8
+; Max Buffer      = 10
+; Max Queue       = 10
+; Max Sprite      = 20
+; Max Module      = 5
+; Max Slice       = 10
+; Max Page        = 4
+; Max CopList     = 10
+; Max PTModule    = 5
+; Max Anim        = 10
+; Max NChunky     = 50
+; Max Chunky      = 20
+; Max Stencil     = 5
+; Max XBSound     = 10
+; /XTRA
+XINCLUDE "constants.ab3"
+NEWTYPE.node
+  x.b
+  y.b
+End NEWTYPE
+
+DEFTYPE .b currentPathLength
+
+Dim pathMap.b(#TILES, #TILES)
+Dim level.b(#TILES, #TILES)
+
+Statement SelectNextOnPath{cx,cy, * ptx.node}
+  SHARED pathMap()
+  lowest.b = 100
+  For x = -1 To 1
+    For y = -1 To 1
+      If (x <> 0 AND y = 0) OR (x = 0 AND y <>0)
+        If cx + x > =0 AND cx + x < #TILES AND cy + y > =0 AND cy + y < #TILES
+          If pathMap(cx + x,cy + y) < lowest
+            lowest = pathMap(cx + x,cy + y)
+            * ptx.node\x = cx + x
+            * ptx.node\y = cy + y
+          EndIf
+        EndIf
+      EndIf
+    Next
+  Next
+End Statement
+
+Statement RecursePath{nx, ny, tx, ty, currentPathLength}
+  SHARED level(), pathMap()
+
+  If nx = tx AND ny = ty
+    pathMap(nx,ny) = currentPathLength - 1
+    Statement Return
+  EndIf
+  For x = -1 To 1
+    For y = -1 To 1
+      ; we only want to check the 4 neighbors forming the cross
+      ; around the current position
+      If (x <> 0 AND y = 0) OR (x = 0 AND y <>0)
+        If nx + x > =0 AND nx + x < #TILES AND ny + y > =0 AND ny + y < #TILES
+          If level(nx + x, ny + y) = 0
+            If pathMap(nx + x, ny + y) = -1 OR pathMap(nx + x,ny + y) > currentPathLength
+              pathMap(nx + x, ny + y) = currentPathLength
+              RecursePath{nx + x, ny + y, tx,ty,currentPathLength + 1}
+            EndIf
+          EndIf
+        EndIf
+      EndIf
+    Next
+  Next
+End Statement
+
+Function.b GetShortestPath{sx.b, sy.b, tx.b, ty.b, * path.node}
+  ; sx / sy = start position (array offsets)
+  ; tx / ty = target position
+
+  SHARED level(), pathMap()
+
+  currentPathLength = 1
+
+  ; we need to clear the array, as it is shared :(
+  For x = 0 To #TILES - 1
+    For y = 0 To #TILES - 1
+      pathMap(x,y) = -1
+    Next
+  Next
+  RecursePath{sx,sy, tx,ty, 1}
+  pathMap(sx,sy) = -1
+
+  ; read the length of the path from the target-entry
+  pathLength.w = pathMap(tx,ty)
+  cx = tx
+  cy = ty
+
+  * path\x = tx
+  * path\y = ty
+  * ptx.node = *path
+
+  For stp.b = 1 To pathLength
+    * ptx.node = *ptx.node + 2
+
+    SelectNextOnPath{cx,cy, * ptx}
+    cx = *ptx\x
+    cy = *ptx\y
+  Next
+
+  Function Return pathLength
+End Function
+
+Dim resultPath.node(10)
+pathLength.w = GetShortestPath{2,2,6,7, & resultPath(0)}
+For x = pathLength To 0 Step - 1
+  Print Str$(resultPath(x)\x) + " / " + Str$(resultPath(x)\y)  + Chr$(13) + Chr$(10)
+Next
+
