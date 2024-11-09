@@ -30,7 +30,7 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 40
+; CursorLine      = 47
 ; CursorColumn    = 31
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
@@ -121,7 +121,7 @@ Statement Shapes_CutShapes{}
     GetaShape #FONT_SHAPE_INDEX + n,26 + (n * #FONT_WIDTH) + n,103, #FONT_WIDTH, #FONT_HEIGHT
   Next
   GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
-  MidHandle #CHAR_SHAPE_MIN
+  Handle #CHAR_SHAPE_MIN, 12,7
 
   ; cutting inventory and other status shapes
   GetaShape #INV_FRAME_INDEX, 28,61,15,15
