@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 595
+; NumberOfBuilds  = 637
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 138
-; CursorColumn    = 24
+; CursorLine      = 145
+; CursorColumn    = 7
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -215,13 +215,16 @@ Repeat
 
   ;Figure out which tile the mouse is pointing at
   ;TODO: move this out of here.
-  basicX = (MouseX - 161)
-  basicY = (MouseY - 40)
+  basicX = (MouseX - 131)
+  basicY = (MouseY - 30)
 
   tileXIndex = Int(( basicY / (#TILE_HEIGHT - 8)) + (basicX / #TILE_WIDTH))-1
   tileYIndex = Int(( - basicX / #TILE_WIDTH) + (basicY / (#TILE_HEIGHT - 8)))
   If tileXIndex > =0 AND tileXIndex < =#TILES AND tileYIndex >=0 AND tileYIndex < =#TILES
-    BBlit bitm, 70, Display_GetTileCoordsX{tileXIndex, tileYIndex}, Display_GetTileCoordsZ{tileXIndex, tileYIndex}
+    If Level_CanMoveTo{tileXIndex, tileYIndex}
+      BBlit bitm, 70, Display_GetTileCoordsX{tileXIndex, tileYIndex}, Display_GetTileCoordsZ{tileXIndex, tileYIndex}
+    EndIf
+
     If Joyb(0) = 1
       ando\matrixpos\x = tileXIndex
       ando\matrixpos\z = tileYIndex
@@ -229,7 +232,7 @@ Repeat
   EndIf
 
   Line 0,0,300,0,6
-  Line 0,200,300,200,6
+  Line 0,181,300,181,6
 
   Display_Debug{Str$(tileXIndex) + "/" + Str$(tileYIndex)+"||"+ Str$(ando\matrixpos\x)+"/" +Str$(ando\matrixpos\z) }
 

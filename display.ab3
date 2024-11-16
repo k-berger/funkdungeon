@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 371
+; NumberOfBuilds  = 372
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 83
-; CursorColumn    = 18
+; CursorLine      = 23
+; CursorColumn    = 14
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -100,7 +100,7 @@ XINCLUDE "types.ab3"
 #DISP_BOTTOM_TOP = #DISP_GAMESTAGE_TOP + #DISP_GAMESTAGE_HEIGHT + 3
 
 #XOFFSET = 295 - (#HALFTILE_W * #TILES )
-#YOFFSET = 40
+#YOFFSET = 28
 
 SHARED bitm.w
 bitm = 0
@@ -113,12 +113,12 @@ Dim level.w (#TILES,#TILES)
 ; and over and over and over again (anything that gets projected as part of double-buffering is
 ; based on that grid, so we better keep it somewhere
 
-Dim tileCoords.vec2 (#TILES, #TILES)
+Dim tileCoords.vec2 (#TILES+1, #TILES+1)
 
 Statement Display_PrecalcTileCoords{}
 SHARED tileCoords()
-For x = 0 To #TILES - 1
-  For z = 0 To #TILES  - 1
+For x = 0 To #TILES
+  For z = 0 To #TILES
     tileCoords(x,z)\x = #XOFFSET + (#HALFTILE_W * x) - (z * #HALFTILE_W)
     tileCoords(x,z)\z = #YOFFSET + (#HALFTILE_H * x) + (z * #HALFTILE_H)
   Next
@@ -168,8 +168,7 @@ QAMIGA
           Blit 0, tileCoords(x,z)\x, tileCoords(x,z)\z
         EndIf
       EndIf
-            ;Box tileCoords(x,z)\x, tileCoords(x,z)\z, tileCoords(x,z)\x + #TILE_WIDTH, tileCoords(x,z)\z + #TILE_HEIGHT,5
-        Next
+    Next
   Next
   GetaShape #RENDERED_LEVEL_SHAPE, 0,0,320,192
   Cls
@@ -178,10 +177,10 @@ QAMIGA
 ; restore the background with BBlit/Unbuffer nicely
   Use BitMap 1
   Cls
-;  Blit #RENDERED_LEVEL_SHAPE,0,0
+  Blit #RENDERED_LEVEL_SHAPE,0,0
   Use BitMap 2
   Cls
-;  Blit #RENDERED_LEVEL_SHAPE,0,0
+  Blit #RENDERED_LEVEL_SHAPE,0,0
 End Statement
 
 Function.q Display_GetTileCoordsX{x,z}

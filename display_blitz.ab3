@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 365
+; NumberOfBuilds  = 367
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,8 +30,8 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 58
-; CursorColumn    = 56
+; CursorLine      = 44
+; CursorColumn    = 40
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
@@ -105,7 +105,7 @@ Statement Display_DrawCharacter {posx, posy, bitm}
 ; draws the avatar onto the playfield. This could be refactored into the DrawLevel statement
 ; to avoid another stack level
   ; SHARED tileCoords()
-  BBlit bitm, #CHAR_SHAPE_MIN, posx + 4 ,posy - 1  - (#CHAR_HEIGHT) / 2
+  BBlit bitm, #CHAR_SHAPE_MIN, posx ,posy
 End Statement
 
 Statement Display_DrawItems {bitm}
@@ -121,6 +121,14 @@ SHARED tileCoords()
 ;  BBlit bitm, #INV_SHAPES_MIN , tileCoords(6,6)\x, tileCoords(6,6)\z  - 4
 End Statement
 
+Statement Display_DrawTileHighlight{x,z}
+SHARED tileCoords(), level()
+        Line tileCoords(x,z)\x, tileCoords(x,z)\z, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,42
+        Line tileCoords(x+1,z)\x, tileCoords(x+1,z)\z, tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z,42
+        Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z, tileCoords(x,z+1)\x, tileCoords(x,z+1)\z,42
+        Line tileCoords(x,z+1)\x, tileCoords(x,z+1)\z, tileCoords(x,z)\x, tileCoords(x,z)\z,42
+End Statement
+
 Statement Display_DrawWireWall{x,z}
 SHARED tileCoords(), level()
 
@@ -129,19 +137,19 @@ SHARED tileCoords(), level()
         Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z-10, tileCoords(x,z+1)\x, tileCoords(x,z+1)\z-10,19
         Line tileCoords(x,z+1)\x, tileCoords(x,z+1)\z-10, tileCoords(x,z)\x, tileCoords(x,z)\z-10,19
 
-        If x = #TILES-2
+        If x = #TILES-1
           Line tileCoords(x+1,z)\x, tileCoords(x+1,z)\z-10, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,19
           Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,19
         Else
-          If level(x+1,z)<3 OR level(x,z+1)>5
-             Line tileCoords(x+1,z)\x, tileCoords(x+1,z)\z-10, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,19
+          If level(x+1,z)<3 OR level(x+1,z)>5
+            Line tileCoords(x+1,z)\x, tileCoords(x+1,z)\z-10, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,19
             Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z, tileCoords(x+1,z)\x, tileCoords(x+1,z)\z,19
           EndIf
         EndIf
 
         Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z-10, tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z,19
 
-        If z = #TILES - 2
+        If z = #TILES - 1
           Line tileCoords(x,z+1)\x, tileCoords(x,z+1)\z-10, tileCoords(x,z+1)\x, tileCoords(x,z+1)\z,19
           Line tileCoords(x+1,z+1)\x, tileCoords(x+1,z+1)\z, tileCoords(x,z+1)\x, tileCoords(x,z+1)\z,19
         Else
@@ -161,11 +169,11 @@ End Statement
         Line tileCoords(x,z+1)\x, tileCoords(x,z+1)\z, tileCoords(x,z)\x, tileCoords(x,z)\z,c
 End Statement
 
-Statement Display_DrawLevel{rposx, rposy, posx, posy, bitm}
+Statement Display_DrawLevel_Wire{rposx, rposy, posx, posy, bitm}
   SHARED level(), tileCoords()
-
-  For z=0 To #TILES-2
-    For x=0 To #TILES-2
+  UnBuffer bitm
+  For z=0 To #TILES-1
+    For x=0 To #TILES-1
     Select level(x,z)
       Case 0:
        ; normal floor tile
@@ -185,11 +193,12 @@ Statement Display_DrawLevel{rposx, rposy, posx, posy, bitm}
 
   Next
 
-Circlef tileCoords(posx, posy)\x, tileCoords(posx, posy)\z+8, 3, 7
-
+Blit 0,tileCoords(posx, posy)\x, tileCoords(posx, posy)\z
+Display_DrawCharacter{tileCoords(posx, posy)\x, tileCoords(posx, posy)\z, bitm}
+Circlef  tileCoords(posx, posy)\x, tileCoords(posx, posy)\z+8,4,4,9
 End Statement
 
-Statement Display_DrawLevel2{rposx, rposy,posx, posy, bitm}
+Statement Display_DrawLevel{rposx, rposy,posx, posy, bitm}
   ; arguments: x-position and y-position of character (real and matrix)
   ;            bitmap to draw on
   ; drawing the level consists of

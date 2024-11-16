@@ -14,7 +14,7 @@
 ; MakeSmallest    = 1
 ; FuncOptimize    = 1
 ; Version         = 0.0.0
-; NumberOfBuilds  = 363
+; NumberOfBuilds  = 364
 ; 
 ; Debugger
 ; -------------------------------------------------------
@@ -30,7 +30,7 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 47
+; CursorLine      = 33
 ; CursorColumn    = 26
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
@@ -105,9 +105,12 @@ Statement Shapes_CutShapes{}
   ; currently three types of tiles
   For y = 0 To 2
     GetaShape y, #OFFSETX ,#OFFSETY + (y * #TILE_HEIGHT) + y,#TILE_WIDTH,#TILE_HEIGHT
+    Handle y, #HALFTILE_W, 0
+
 ;    MidHandle y
   Next
   GetaShape 70, #OFFSETX, #OFFSETY + (3 * #TILE_HEIGHT) + y, #TILE_WIDTH, #TILE_HEIGHT
+  Handle 70,#HALFTILE_W,0
   ; cutting "high" tiles here (doors, walls, etc.)
   ; 0 = column
   ; 1 = wall frontal
@@ -117,14 +120,14 @@ Statement Shapes_CutShapes{}
     GetaShape #SHAPE_COLUMN + h,104 + (h * #TILE_WIDTH) + h,#OFFSETY, #TILE_WIDTH, #TILE_HEIGHT * 2
     ; the high shapes are double the height of normal tiles. In order to position them correctly, relative
     ; to the normal shapes, we need to handle them in the middle of their "socket" (which is a tile or nothing)
-    Handle #SHAPE_COLUMN + h,#HALFTILE_W, #TILE_HEIGHT
+    Handle #SHAPE_COLUMN + h,#HALFTILE_W, #TILE_HEIGHT+2
   Next
 
   For n = 0 To 25
     GetaShape #FONT_SHAPE_INDEX + n,26 + (n * #FONT_WIDTH) + n,103, #FONT_WIDTH, #FONT_HEIGHT
   Next
   GetaShape #CHAR_SHAPE_MIN, 101,79,#CHAR_WIDTH, #CHAR_HEIGHT
-  Handle #CHAR_SHAPE_MIN, 12,7
+  Handle #CHAR_SHAPE_MIN,9,10
 
   ; cutting inventory and other status shapes
   GetaShape #INV_FRAME_INDEX, 28,61,15,15

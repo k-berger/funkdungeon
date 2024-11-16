@@ -30,11 +30,12 @@
 ; 
 ; Editor
 ; -------------------------------------------------------
-; CursorLine      = 130
-; CursorColumn    = 55
+; CursorLine      = 73
+; CursorColumn    = 51
 ; LabelSearch     = "shape_sh"
 ; LabelRemark     = 0
 ; LabelAll        = 1
+; LabelCase       = 0
 ; LabelPosition   = 0
 ; 
 ; Blitz Objects
@@ -59,6 +60,8 @@
 ; Max Console     = 5
 ; Max TCPSock     = 5
 ; Max Tape        = 5
+; Max TagList     = 5
+; Max Database    = 16
 ; Max Sound       = 10
 ; Max MedModule   = 8
 ; Max Buffer      = 10
@@ -147,7 +150,7 @@ Function.w Level_CanMoveTo{posx, posy}
   EndIf
 
   ; make sure the target position isn't taken by something we can't pass
-  If level(posx, posy) = 1 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H OR level(posx,posy) = #SHAPE_WALL_W
+  If level(posx, posy) = 1 OR level(posx, posy)=2 OR level(posx,posy) = #SHAPE_COLUMN OR level(posx,posy) = #SHAPE_WALL_H OR level(posx,posy) = #SHAPE_WALL_W
     Function Return 0
   EndIf
 
@@ -201,16 +204,3 @@ Statement Level_CheckRoomBoundariesAndMove{}
     Statement Return
   EndIf
 End Statement
-
-
-Statement HighlightTile{x.w, y.w}
-  ; We need the tiles coordinates array here to search
-  SHARED tileCoords()
-
-  ;try to find the tile that is drawn on the coordinates
-End Statement
-
-
-
-
-
